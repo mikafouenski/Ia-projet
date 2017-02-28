@@ -2,6 +2,8 @@
 
 void expp_b(char* buf, int* p);
 void expp(char* buf, int* p);
+void opp(char* buf, int* p);
+void opp_b(char* buf, int* p);
 
 void read_file(const char* name, char* buf) {
     FILE *f = fopen(name, "r");
@@ -13,6 +15,7 @@ void read_file(const char* name, char* buf) {
         perror("fscanf");
         exit(1);
     }
+    fclose(f);
 }
 
 void eat_char(char* buf, int* p) {
@@ -30,7 +33,23 @@ void expp_b(char* buf, int* p) {
     } else if (buf[*p] == '*') {
         conso(p);
         expp(buf, p);
-    } else if (buf[*p] == '[') {
+    } else if (buf[*p] == '-') {
+        conso(p);
+        if (buf[*p] == '>') {
+            conso(p);
+            expp(buf, p);
+        } else {
+            printf("ERRR: attendu < \'>\' >\n");
+            exit(1);
+        }
+    }
+}
+
+void expp(char* buf, int* p) {
+    if (buf[*p] == '/') {
+        conso(p);
+        expp(buf, p);
+    }  else if (buf[*p] == '[') {
         conso(p);
         if (buf[*p] == ']') {
             conso(p);
@@ -48,22 +67,6 @@ void expp_b(char* buf, int* p) {
             printf("ERRR: attendu < \'<\' >\n");
             exit(1);
         }
-    } else if (buf[*p] == '-') {
-        conso(p);
-        if (buf[*p] == '>') {
-            conso(p);
-            expp(buf, p);
-        } else {
-            printf("ERRR: attendu < \'>\' >\n");
-            exit(1);
-        }
-    }
-}
-
-void expp(char* buf, int* p) {
-    if (buf[*p] == '/') {
-        conso(p);
-        expp(buf, p);
     } else if (buf[*p] == '(') {
         conso(p);
         expp(buf, p);
