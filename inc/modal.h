@@ -6,32 +6,36 @@
 
 #define BUFFSIZE 1000
 
-enum {
+typedef enum OPP OPP;
+enum OPP{
     NON, OU, ET, IMPLIQUE, CARRE, LOSANGE
-} OPP;
+};
+
 
 #define is_maj(c)(('A' <= (c)) && ((c) <= 'Z'))
 #define is_min(c)(('a' <= (c)) && ((c) <= 'z'))
 #define is_alpha(c)(is_maj(c) || is_min(c))
 
-typedef struct expp {
+typedef struct exppS_ exppS;
+
+struct exppS_ {
     enum {
         opp_unaire, opp_binaire, terme
     } t;
     union {
         struct {
             OPP opp;
-            struct expp;
+            struct exppS_ * op1;
         } opp_unaire;
         struct {
             OPP opp;
-            struct expp1;
-            struct expp2;
+            struct exppS_ * op1;
+            struct exppS_ * op2;
         } opp_binaire;
         struct {
             char c;
         } terme;
     } u;
-} expp;
+};
 
 #endif

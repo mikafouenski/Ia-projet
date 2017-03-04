@@ -45,6 +45,7 @@ void expp_b(char* buf, int* p) {
     }
 }
 
+
 void expp(char* buf, int* p) {
     if (buf[*p] == '/') {
         conso(p);
@@ -78,6 +79,7 @@ void expp(char* buf, int* p) {
         exit(1);
     }
 }
+
 
 int main(int argc, char const *argv[]) {
     if (argc - 1 != 1) {
