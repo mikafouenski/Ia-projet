@@ -21,20 +21,20 @@ typedef struct exppS_ exppS;
 struct exppS_ {
     enum {
         opp_unaire, opp_binaire, terme
-    } t;
+    } type;
     union {
         struct {
             OPP opp;
             struct exppS_ * op1;
-        } opp_unaire;
+        } opp_u;
         struct {
             OPP opp;
             struct exppS_ * op1;
             struct exppS_ * op2;
-        } opp_binaire;
+        } opp_b;
         struct {
-            char c;
-        } terme;
+            char* c;
+        } t;
     } u;
 };
 
