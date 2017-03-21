@@ -6,7 +6,7 @@ LDFLAGS=
 SRC=$(wildcard src/*.c)
 OBJ=$(SRC:.c=.o)
 
-EXEC=modal
+EXEC=logmod
 
 all: $(EXEC)
 
