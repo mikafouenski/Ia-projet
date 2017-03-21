@@ -105,7 +105,9 @@ exppS* expp(char* buf, int* p, exppS *herite) {
         }
     } else if (buf[*p] == '(') {
         conso(p);
-        expp(buf, p, NULL);
+        exppS *r = expp(buf, p,herite);
+        conso(p);
+        return r;
     } else if (is_alpha(buf[*p])) {
         return expp(buf, p, termeInf(buf,p));
     } else {
