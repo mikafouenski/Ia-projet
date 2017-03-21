@@ -26,13 +26,16 @@ int main(int argc, char const *argv[]) {
 
     int p = 0;
     exppS* r = expp(buf, &p, NULL);
+    exppS* n = negate_exppS(r);
 
     display_exppS(r);
+    printf("\n");
+    display_exppS(n);
     printf("\n");
 
     printf("%s\n", buf);
 
     free(buf);
-    free_exppS(r);
+    free_exppS(n);
     return 0;
 }

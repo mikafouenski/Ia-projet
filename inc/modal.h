@@ -12,4 +12,6 @@ exppS* termeInf(char* buf, int* p);
 exppS* unaire(char* buf, int* p, OPP o);
 exppS* expp(char* buf, int* p, exppS *herite);
 
+exppS* negate_exppS(exppS* e);
+
 #endif

@@ -95,3 +95,8 @@ exppS* expp(char* buf, int* p, exppS *herite) {
     }
     return herite;
 }
+
+exppS* negate_exppS(exppS* e) {
+    exppS* n = create_opp_unaire(NON, e);
+    return n;
+}
