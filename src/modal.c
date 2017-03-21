@@ -67,30 +67,29 @@ exppS* opp_et(char* buf, int* p, exppS* h) {
     return h;
 }
 
-exppS * termeInf(char* buf, int* p){
+exppS* termeInf(char* buf, int* p){
         exppS* t = create_terme(buf[*p]);
         conso(p);
         return t;
 }
 
+exppS* unaire(char* buf, int* p, OPP o) {
+    exppS* t = NULL;
+    if (is_alpha(buf[*p])) t = termeInf(buf, p);
+    else t = expp(buf, p, NULL);
+    exppS* non = create_opp_unaire(o, t);
+    return expp(buf, p, non);
+}
+
 exppS* expp(char* buf, int* p, exppS *herite) {
     if (buf[*p] == '/') {
         conso(p);
-        exppS *t = NULL;
-        if (is_alpha(buf[*p])){
-            t = termeInf(buf,p);
-        }
-        else 
-            t = expp(buf, p,NULL);
-        exppS *non = create_opp_unaire(NON,t);
-
-        return expp(buf,p,non);
-    
+        return unaire(buf, p, NON);
     } else if (buf[*p] == '[') {
         conso(p);
         if (buf[*p] == ']') {
             conso(p);
-            expp(buf, p,NULL);
+            return unaire(buf, p, CARRE);
         } else {
             printf("ERRR: attendu < ] >\n");
             exit(1);
@@ -99,28 +98,22 @@ exppS* expp(char* buf, int* p, exppS *herite) {
         conso(p);
         if (buf[*p] == '>') {
             conso(p);
-            expp(buf, p,NULL);
+            return unaire(buf, p, LOSANGE);
         } else {
             printf("ERRR: attendu < \'<\' >\n");
             exit(1);
         }
     } else if (buf[*p] == '(') {
         conso(p);
-        expp(buf, p,NULL);
+        expp(buf, p, NULL);
     } else if (is_alpha(buf[*p])) {
-
-        return expp(buf,p,termeInf(buf,p));
-        // exppS* t = create_terme(buf[*p]);
-        // conso(p);
-        // 
+        return expp(buf, p, termeInf(buf,p));
     } else {
         exppS* r = opp_impl(buf, p, herite);
         return r;
-        // printf("ERRR: attendu < / | ( | char > \n");
-        // exit(1);
     }
     return herite;
-    }
+}
 
 exppS* create_opp_unaire(OPP o, exppS* e) {
     exppS* n = (exppS*) malloc (sizeof(exppS));
@@ -162,7 +155,6 @@ void free_exppS(exppS* e) {
     }
     free(e);
 }
-
 
 void display_opp(OPP o){
     switch(o){
