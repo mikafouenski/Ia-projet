@@ -3,7 +3,7 @@
 exppS* opp_impl(char* buf, int* p, exppS* h);
 exppS* opp_ou(char* buf, int* p, exppS* h);
 exppS* opp_et(char* buf, int* p, exppS* h);
-exppS* expp(char* buf, int* p);
+exppS* expp(char* buf, int* p, exppS * a);
 exppS* create_opp_unaire(OPP o, exppS* e);
 exppS* create_opp_binaire(OPP o, exppS* e1, exppS* e2);
 exppS* create_terme(char c);
@@ -30,31 +30,13 @@ void conso(int* p) {
     (*p)++;
 }
 
-// void expp_b(char* buf, int* p) {
-//     if (buf[*p] == '+') {
-//         conso(p);
-//         expp(buf, p);
-//     } else if (buf[*p] == '*') {
-//         conso(p);
-//         expp(buf, p);
-//     } else if (buf[*p] == '-') {
-//         conso(p);
-//         if (buf[*p] == '>') {
-//             conso(p);
-//             expp(buf, p);
-//         } else {
-//             printf("ERRR: attendu < \'>\' >\n");
-//             exit(1);
-//         }
-//     }
-// }
 
 exppS* opp_impl(char* buf, int* p, exppS* h) {
      if (buf[*p] == '-') {
         conso(p);
         if (buf[*p] == '>') {
             conso(p);
-            exppS* r = expp(buf, p);
+            exppS* r = expp(buf, p, NULL);
             exppS* impl = create_opp_binaire(IMPLIQUE, h, r);
             return impl;
         } else {
@@ -68,7 +50,7 @@ exppS* opp_impl(char* buf, int* p, exppS* h) {
 exppS* opp_ou(char* buf, int* p, exppS* h) {
     if (buf[*p] == '+') {
         conso(p);
-        exppS* r = expp(buf, p);
+        exppS* r = expp(buf, p, NULL);
         exppS* ou = create_opp_binaire(OU, h, r);
         return ou;
     }
@@ -78,22 +60,37 @@ exppS* opp_ou(char* buf, int* p, exppS* h) {
 exppS* opp_et(char* buf, int* p, exppS* h) {
     if (buf[*p] == '*') {
         conso(p);
-        exppS* r = expp(buf, p);
+        exppS* r = expp(buf, p, NULL);
         exppS* et = create_opp_binaire(ET, h, r);
         return et;
     }
     return h;
 }
 
-exppS* expp(char* buf, int* p) {
+exppS * termeInf(char* buf, int* p){
+        exppS* t = create_terme(buf[*p]);
+        conso(p);
+        return t;
+}
+
+exppS* expp(char* buf, int* p, exppS *herite) {
     if (buf[*p] == '/') {
         conso(p);
-        expp(buf, p);
-    }  else if (buf[*p] == '[') {
+        exppS *t = NULL;
+        if (is_alpha(buf[*p])){
+            t = termeInf(buf,p);
+        }
+        else 
+            t = expp(buf, p,NULL);
+        exppS *non = create_opp_unaire(NON,t);
+
+        return expp(buf,p,non);
+    
+    } else if (buf[*p] == '[') {
         conso(p);
         if (buf[*p] == ']') {
             conso(p);
-            expp(buf, p);
+            expp(buf, p,NULL);
         } else {
             printf("ERRR: attendu < ] >\n");
             exit(1);
@@ -102,25 +99,28 @@ exppS* expp(char* buf, int* p) {
         conso(p);
         if (buf[*p] == '>') {
             conso(p);
-            expp(buf, p);
+            expp(buf, p,NULL);
         } else {
             printf("ERRR: attendu < \'<\' >\n");
             exit(1);
         }
     } else if (buf[*p] == '(') {
         conso(p);
-        expp(buf, p);
+        expp(buf, p,NULL);
     } else if (is_alpha(buf[*p])) {
-        exppS* t = create_terme(buf[*p]);
-        conso(p);
-        exppS* r = opp_impl(buf, p, t);
-        return r;
+
+        return expp(buf,p,termeInf(buf,p));
+        // exppS* t = create_terme(buf[*p]);
+        // conso(p);
+        // 
     } else {
-        printf("ERRR: attendu < / | ( | char > \n");
-        exit(1);
+        exppS* r = opp_impl(buf, p, herite);
+        return r;
+        // printf("ERRR: attendu < / | ( | char > \n");
+        // exit(1);
     }
-    return NULL;
-}
+    return herite;
+    }
 
 exppS* create_opp_unaire(OPP o, exppS* e) {
     exppS* n = (exppS*) malloc (sizeof(exppS));
@@ -163,17 +163,49 @@ void free_exppS(exppS* e) {
     free(e);
 }
 
+
+void display_opp(OPP o){
+    switch(o){
+        case NON :
+            printf("NON");
+            break;
+        case OU :
+            printf("OU");
+            break;
+        case ET :
+            printf("ET");
+            break;
+        case IMPLIQUE :
+            printf("IMPLIQUE");
+            break;
+        case CARRE :
+            printf("CARRE");
+            break;
+        case LOSANGE :
+            printf("LOSANGE");
+            break;
+    }
+}
+
 void display_exppS(exppS* e) {
     switch(e->type) {
         case opp_unaire:
-            printf("OPP\n");
+            display_opp(e->u.opp_u.opp);
+            printf("(");
             display_exppS(e->u.opp_u.op1);
+            printf(")");
+            break;
         case opp_binaire:
+            display_opp(e->u.opp_b.opp);
+            printf("(");
             display_exppS(e->u.opp_b.op1);
-            printf("OPP\n");
+            printf(",");
             display_exppS(e->u.opp_b.op2);
+            printf(")");
+            break;
         case terme:
-            printf("%s\n", e->u.t.c);
+            printf("%s", e->u.t.c);
+            break;
     }
 }
 
@@ -188,9 +220,10 @@ int main(int argc, char const *argv[]) {
     read_file(argv[1], buf);
 
     int p = 0;
-    exppS* r = expp(buf, &p);
+    exppS* r = expp(buf, &p, NULL);
 
     display_exppS(r);
+    printf("\n");
 
     printf("%s\n", buf);
 
