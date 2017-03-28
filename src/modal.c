@@ -100,3 +100,57 @@ exppS* negate_exppS(exppS* e) {
     exppS* n = create_opp_unaire(NON, e);
     return n;
 }
+
+// exppS* propagation_not(exppS* e, int invert) { // Bool pour l'inversion des signes
+//     switch(e->type) {
+//         case opp_unaire:
+//             if (e->u.opp_u.opp == NON) {
+//                 exppS* n = e->u.opp_u.op1;
+//                 free(e);
+//                 return propagation_not(n, 1);
+//             }
+//             break;
+//         case opp_binaire:
+//             if (invert) {
+//                 switch(e->u.opp_u.opp) {
+//                     case OU:
+//                         e->u.opp_u.opp = ET;
+//                         break;
+//                     case ET:
+//                         e->u.opp_u.opp = OU;
+//                         break;
+//                     case IMPLIQUE:
+//                         break;
+//                 }
+//             }
+//             e->u.opp_u.op1 = propagation_not(e->u.opp_u.op1, 0);
+//             e->u.opp_u.op2 = propagation_not(e->u.opp_u.op2, 0);
+//             return e;
+//         case terme:
+
+//             break;
+//     }
+// }
+
+exppS* not_rule(exppS* e) {
+    switch(e->type) {
+        case opp_unaire:
+            switch(e->u.opp_u.opp) {
+                case NON:
+                    return e->u.opp_u.op1;
+                case CARRE:
+                    printf("LE NOUVEAU MONDE !\n");
+                case LOSANGE:
+                    printf("UN LOSANGE ?\n");
+            }
+            break;
+        case opp_binaire:
+            switch(e->u.opp_u.opp) {
+                case OU:
+                    int appel_recusif = fonctionInconnue()
+                case ET:
+                case IMPLIQUE:
+            }
+        case terme:
+    }
+}
