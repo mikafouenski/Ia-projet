@@ -132,25 +132,133 @@ exppS* negate_exppS(exppS* e) {
 //     }
 // }
 
-exppS* not_rule(exppS* e) {
-    switch(e->type) {
-        case opp_unaire:
-            switch(e->u.opp_u.opp) {
-                case NON:
-                    return e->u.opp_u.op1;
-                case CARRE:
-                    printf("LE NOUVEAU MONDE !\n");
-                case LOSANGE:
-                    printf("UN LOSANGE ?\n");
-            }
-            break;
-        case opp_binaire:
-            switch(e->u.opp_u.opp) {
-                case OU:
-                    int appel_recusif = fonctionInconnue()
-                case ET:
-                case IMPLIQUE:
-            }
-        case terme:
-    }
+
+///////////////// SUITE
+
+typedef struct branch { // arbre à 2 fils
+    exppS* e;
+    int monde;
+    struct branch* nexts[2];
+} branch;
+
+branch* create_branch() {
+    branch* b = (branch*) malloc(sizeof(branch));
+    b->nexts[0] = NULL;
+    b->nexts[1] = NULL;
+    b->monde = 0;
+    return b;
 }
+
+branch* goto_leaf(branch* b, int* current_path, int current_path_size) {
+    branch* leaf = b;
+    for (int i = 0; i < current_path_size; ++i)
+        if (leaf->nexts[current_path[i]]) leaf = leaf->nexts[current_path[i]];
+    return leaf;
+}
+
+// seul le noeud ou l'on branche aura pos = 1
+void add_next(branch* b, int pos/* 0 ou 1*/, int monde, exppS* e) {
+    b->nexts[pos] = (branch*) malloc(sizeof(branch));
+    b->nexts[pos]->monde = monde;
+    b->nexts[pos]->nexts[0] = NULL;
+    b->nexts[pos]->nexts[1] = NULL;
+    b->nexts[pos]->e = e;
+}
+
+// détection de l'opérateur
+int test_OPP(exppS* e, OPP o) {
+    switch(o) {
+        case NON:
+            return e->type == opp_unaire && e->u.opp_u.opp == NON;
+        case OU:
+            return e->type == opp_binaire && e->u.opp_b.opp == OU;
+        case ET:
+            return e->type == opp_binaire && e->u.opp_b.opp == ET;
+        case IMPLIQUE:
+            return e->type == opp_binaire && e->u.opp_b.opp == IMPLIQUE;
+        case CARRE:
+            return e->type == opp_unaire && e->u.opp_u.opp == CARRE;
+        case LOSANGE:
+            return e->type == opp_unaire && e->u.opp_u.opp == LOSANGE;
+    }
+    return -1;
+}
+
+// retourne 0 si tout vas bien ! !!
+// Un calcul bien lent ! :O
+int check_validity(branch* b) { // vérifie que l'on a pas trouver de contradiction
+    //TODO
+    return 0;
+}
+
+//  //a = a
+// retourne 0 si tout vas bien ! ! !
+int rule1(exppS* e, branch* b, int* current_path, int *current_path_size, int monde) {
+    if (test_OPP(e, NON)) {
+        exppS* son = e->u.opp_u.op1;
+        if (test_OPP(son, NON)) {
+            branch* l = goto_leaf(b, current_path, *current_path_size);
+            add_next(l, 0, monde, son->u.opp_u.op1);
+            current_path[*current_path_size] = 0;
+            (*current_path_size)++;
+            return check_validity(b);
+        }
+    }
+    return 0;
+}
+
+// a^b = a  b
+int rule2(exppS* e, branch* b, int* current_path, int *current_path_size, int monde) {
+    if (test_OPP(e, ET)) {
+        branch* l = goto_leaf(b, current_path, *current_path_size);
+        add_next(l, 0, monde, e->u.opp_b.op1);
+        current_path[*current_path_size] = 0;
+        (*current_path_size)++;
+        l = l->nexts[0];
+        add_next(l, 0, monde, e->u.opp_b.op2 );
+        current_path[*current_path_size] = 0;
+        (*current_path_size)++;
+        return check_validity(b);
+    }
+    return 0;
+}
+
+// /(AvB) = /a  /b
+int rule3(exppS* e, branch* b, int* current_path, int *current_path_size, int monde) {
+    if (test_OPP(e, NON)) {
+        exppS* son = e->u.opp_u.op1;
+        if (test_OPP(e, OU)) {
+            branch* l = goto_leaf(b, current_path, *current_path_size);
+            add_next(l, 0, monde, create_opp_unaire(NON, son->u.opp_b.op1));
+            current_path[*current_path_size] = 0;
+            (*current_path_size)++;
+            l = l->nexts[0];
+            add_next(l, 0, monde, create_opp_unaire(NON, son->u.opp_b.op2));
+            current_path[*current_path_size] = 0;
+            (*current_path_size)++;
+            return check_validity(b);
+        }
+    }
+    return 0;
+}
+
+// /(A->B) = a  /b
+int rule4(exppS* e, branch* b, int* current_path, int *current_path_size, int monde) {
+    if (test_OPP(e, NON)) {
+        exppS* son = e->u.opp_u.op1;
+        if (test_OPP(e, IMPLIQUE)) {
+            branch* l = goto_leaf(b, current_path, *current_path_size);
+            add_next(l, 0, monde, son->u.opp_b.op1);
+            current_path[*current_path_size] = 0;
+            (*current_path_size)++;
+            l = l->nexts[0];
+            add_next(l, 0, monde, create_opp_unaire(NON, son->u.opp_b.op2));
+            current_path[*current_path_size] = 0;
+            (*current_path_size)++;
+            return check_validity(b);
+        }
+    }
+    return 0;
+}
+
+/*      A SUIVRE       */
