@@ -26,15 +26,24 @@ int main(int argc, char const *argv[]) {
 
     int p = 0;
     exppS* r = expp(buf, &p, NULL);
-    exppS* n = negate_exppS(r);
-
     display_exppS(r);
     printf("\n");
+    
+    exppS* n = negate_exppS(r);
+    
     display_exppS(n);
     printf("\n");
 
-    printf("%s\n", buf);
+    litteraux *litterauxFind = malloc(sizeof(litteraux)* 100);
 
+    int result = test(n,litterauxFind,0,100,1);
+    if(result > 0){
+        printf("Pas une totologie\n");
+    }
+    else
+        printf("Totologie\n");
+
+    free(litterauxFind);
     free(buf);
     free_exppS(n);
     return 0;

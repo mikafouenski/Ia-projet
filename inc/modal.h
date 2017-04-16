@@ -14,4 +14,6 @@ exppS* expp(char* buf, int* p, exppS *herite);
 
 exppS* negate_exppS(exppS* e);
 
+int test(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde);
+
 #endif

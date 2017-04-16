@@ -16,6 +16,8 @@ enum OPP{
 #define is_min(c)(('a' <= (c)) && ((c) <= 'z'))
 #define is_alpha(c)(is_maj(c) || is_min(c))
 
+
+
 typedef struct exppS_ exppS;
 
 struct exppS_ {
@@ -45,5 +47,10 @@ exppS* create_terme(char c);
 void free_exppS(exppS* e);
 void display_opp(OPP o);
 void display_exppS(exppS* e);
+
+typedef struct litteraux { // arbre à 2 fils
+    exppS* e;
+    int monde;
+} litteraux;
 
 #endif
