@@ -316,8 +316,7 @@ int check_validity(branch* b) {
 
 // //a = a
 int rule1(branch* b) {
-    printf("rule1\n");
-    if (test_opp(b->e, NON) && is_non_terme(b->e->u.opp_u.op1)) { // j'ai trouver //a
+    if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, NON)) { // j'ai trouver //a
         exppS* t = (exppS*) malloc(sizeof(exppS));
         memcpy(t, b->e->u.opp_u.op1->u.opp_u.op1, sizeof(exppS));
         b->nexts[0] = create_branch(t, b->monde, 1);
@@ -328,8 +327,52 @@ int rule1(branch* b) {
 
 // a^b = a  b
 int rule2(branch* b) {
-    printf("rule2\n");
     if (test_opp(b->e, ET)) { // j'ai trouver a^b
+        exppS* op1 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
+        b->nexts[0] = create_branch(op1, b->monde, is_end_deriv(op1));
+        exppS* op2 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
+        b->nexts[1] = create_branch(op2, b->monde, is_end_deriv(op2));
+        return check_validity(b);
+    }
+    return 0;
+}
+
+// /(AvB) = /a  /b
+int rule3(branch* b) {
+    if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, OU)) { // /(AvB)
+        exppS* op1 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
+        exppS* non_op1 = negate_exppS(op1);
+        b->nexts[0] = create_branch(non_op1, b->monde, is_end_deriv(non_op1));
+        exppS* op2 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
+        exppS* non_op2 = negate_exppS(op2);
+        b->nexts[0]->nexts[0] = create_branch(non_op2, b->monde, is_end_deriv(non_op2));
+        return check_validity(b);
+    }
+    return 0;
+}
+
+// /(A->B) = a  /b
+int rule4(branch* b) {
+    if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, IMPLIQUE)) { // /(A->B)
+        exppS* op1 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
+        b->nexts[0] = create_branch(op1, b->monde, is_end_deriv(op1));
+        exppS* op2 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
+        exppS* non_op2 = negate_exppS(op2);
+        b->nexts[0]->nexts[0] = create_branch(non_op2, b->monde, is_end_deriv(non_op2));
+        return check_validity(b);
+    }
+    return 0;
+}
+
+// AvB = a | b     -> on branche
+int rule5(branch* b) {
+    if (test_opp(b->e, OU)) { // j'ai trouver AvB
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
         b->nexts[0] = create_branch(op1, b->monde, is_end_deriv(op1));
@@ -343,7 +386,6 @@ int rule2(branch* b) {
 
 // /(A^B) = /a | /b     -> on branche
 int rule6(branch* b) {
-    printf("rule6\n");
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, ET)) { // j'ai trouver /(a^b)
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
@@ -353,6 +395,21 @@ int rule6(branch* b) {
         memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
         exppS* non_op2 = negate_exppS(op2);
         b->nexts[1] = create_branch(non_op2, b->monde, is_end_deriv(non_op2));
+        return check_validity(b);
+    }
+    return 0;
+}
+
+// A->B = /a | b     -> on branche
+int rule7(branch* b) {
+    if (test_opp(b->e, IMPLIQUE)) { // j'ai trouver A->B
+        exppS* op1 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
+        exppS* non_op1 = negate_exppS(op1);
+        b->nexts[0] = create_branch(non_op1, b->monde, is_end_deriv(non_op1));
+        exppS* op2 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
+        b->nexts[1] = create_branch(op2, b->monde, is_end_deriv(op2));
         return check_validity(b);
     }
     return 0;
