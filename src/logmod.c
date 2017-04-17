@@ -48,7 +48,7 @@ int main(int argc, char const *argv[]) {
     // free(litterauxFind);
 
     int tautologie = deriv(n);
-    if (tautologie) printf("TAUTOLOGIE ! ! !\n");
+    if (tautologie < 0) printf("TAUTOLOGIE ! ! !\n");
     else printf("PAS TAUTOLOGIE ! ! !\n");
 
     free(buf);
