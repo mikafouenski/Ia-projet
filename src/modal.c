@@ -310,41 +310,69 @@ char* get_end_terme(exppS* e) {
     exit(1);
 }
 
-int check_validity(branch* b) {
-    return 0;
+int addLiteral(litteraux *litterauxFind,exppS* e,int monde, int size){
+    litterauxFind[size].e = e;
+    litterauxFind[size].monde = monde;
+    ++size;
+    return size;
+}
+
+int check_validity(exppS* e, litteraux *litterauxFind,int size,int monde){
+    //On ajoute un terme positif on regarde si un négatif contredi
+    if(e->type == terme){
+        for (int i = 0; i < size; ++i)
+        {
+            if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == opp_unaire){
+                if(strcmp(litterauxFind[i].e->u.opp_u.op1->u.t.c,e->u.t.c) == 0){
+                    return -1;
+                }
+            }
+        }
+    }
+    //On ajoute un NON
+    else {
+        char* c = e->u.opp_u.op1->u.t.c;
+        for (int i = 0; i < size; ++i)
+        {
+            if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == terme){
+                if(strcmp(c,litterauxFind[i].e->u.t.c) == 0){
+                    return -1;
+                }
+            }
+        }
+    }
+    return addLiteral(litterauxFind,e,monde,size);;
 }
 
 // //a = a
 int rule1(branch* b) {
-    printf("rule1\n");
     if (test_opp(b->e, NON) && is_non_terme(b->e->u.opp_u.op1)) { // j'ai trouver //a
+        printf("rule1\n");
         exppS* t = (exppS*) malloc(sizeof(exppS));
         memcpy(t, b->e->u.opp_u.op1->u.opp_u.op1, sizeof(exppS));
         b->nexts[0] = create_branch(t, b->monde, 1);
-        return check_validity(b);
     }
     return 0;
 }
 
 // a^b = a  b
 int rule2(branch* b) {
-    printf("rule2\n");
     if (test_opp(b->e, ET)) { // j'ai trouver a^b
+        printf("rule2\n");
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
         b->nexts[0] = create_branch(op1, b->monde, is_end_deriv(op1));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
         b->nexts[1] = create_branch(op2, b->monde, is_end_deriv(op2));
-        return check_validity(b);
     }
     return 0;
 }
 
 // /(A^B) = /a | /b     -> on branche
 int rule6(branch* b) {
-    printf("rule6\n");
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, ET)) { // j'ai trouver /(a^b)
+        printf("rule6\n");
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
         exppS* non_op1 = negate_exppS(op1);
@@ -353,34 +381,48 @@ int rule6(branch* b) {
         memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
         exppS* non_op2 = negate_exppS(op2);
         b->nexts[1] = create_branch(non_op2, b->monde, is_end_deriv(non_op2));
-        return check_validity(b);
     }
     return 0;
 }
 
+int ruleConflit(branch* b,litteraux* litterauxFind,int size){
+        if(is_terme(b->e) || is_non_terme(b->e))
+            return check_validity(b->e,litterauxFind,size,b->monde);
+        return 0;
+}
+
+
+
+
 // retourne 1 si tautologie
-int deriv_back(branch* b, rule* sys, int sys_size) {
+int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int size) {
     for (int i = 0; i < sys_size; ++i) {
-        int invalid = (*sys[i])(b);
-        if (invalid) return 0;
+        (*sys[i])(b);
     }
+    size = ruleConflit(b,litterauxFind,size);
+    if(size < 0){
+        return 0;
+    }
+    int r;
     if (b->nexts[0] != NULL) {
-        int r = deriv_back(b->nexts[0], sys, sys_size);
-        if (r) return 0;
+        r = deriv_back(b->nexts[0], sys, sys_size,litterauxFind,size);
     }
+    //Branche valide
+    if(r > 0)
+        return 1;
     if (b->nexts[1] != NULL) {
-        int r = deriv_back(b->nexts[1], sys, sys_size);
-        if (r) return 0;
+        r = deriv_back(b->nexts[1], sys, sys_size, litterauxFind,size);
     }
-    return 1;
+    return r;
 }
 
 // retourne 1 si tautologie
 int deriv(exppS* e) {
     branch* head = create_branch(e, 0, 0);
+    litteraux* litterauxFind = malloc(sizeof(litteraux) * 100);
     rule system_K[3] = {rule1, rule2, rule6};
     int system_K_size = 3;
-    int r = deriv_back(head, system_K, system_K_size);
+    int r = deriv_back(head, system_K, system_K_size,litterauxFind, 0);
     display_branch(head, 0);
     return r;
 }
