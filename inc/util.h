@@ -53,4 +53,13 @@ typedef struct litteraux { // arbre à 2 fils
     int monde;
 } litteraux;
 
+typedef struct branch { // arbre à 2 fils
+    exppS* e;
+    int monde;
+    int end_deriv; // 0 si l'on peut encore dériver cette exppS, 1 sinon
+    struct branch* nexts[2];
+} branch;
+
+typedef int (*rule) (branch*);
+
 #endif

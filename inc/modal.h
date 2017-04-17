@@ -16,4 +16,7 @@ exppS* negate_exppS(exppS* e);
 
 int test(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde);
 
+int deriv(exppS* e);
+void display_branch(branch* b, int indent);
+
 #endif

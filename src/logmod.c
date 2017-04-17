@@ -26,24 +26,31 @@ int main(int argc, char const *argv[]) {
 
     int p = 0;
     exppS* r = expp(buf, &p, NULL);
+    printf("Formule :  ");
     display_exppS(r);
     printf("\n");
-    
+
     exppS* n = negate_exppS(r);
-    
+
+    printf("Négation :  ");
     display_exppS(n);
     printf("\n");
 
-    litteraux *litterauxFind = malloc(sizeof(litteraux)* 100);
+    // litteraux *litterauxFind = malloc(sizeof(litteraux)* 100);
 
-    int result = test(n,litterauxFind,0,100,1);
-    if(result > 0){
-        printf("Pas une totologie\n");
-    }
-    else
-        printf("Totologie\n");
+    // int result = test(n,litterauxFind,0,100,1);
+    // if(result > 0){
+    //     printf("Pas une totologie\n");
+    // }
+    // else
+    //     printf("Totologie\n");
 
-    free(litterauxFind);
+    // free(litterauxFind);
+
+    int tautologie = deriv(n);
+    if (tautologie) printf("TAUTOLOGIE ! ! !\n");
+    else printf("PAS TAUTOLOGIE ! ! !\n");
+
     free(buf);
     free_exppS(n);
     return 0;
