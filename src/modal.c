@@ -102,155 +102,6 @@ exppS* negate_exppS(exppS* e) {
     return n;
 }
 
-
-///////// Suite
-
-
-// int addLiteral(litteraux *litterauxFind,exppS* e,int monde, int size, int sizeTab){
-//     if(size > sizeTab){
-//         //realoc si nécéssaire
-//     }
-//     litterauxFind[size].e = e;
-//     litterauxFind[size].monde = monde;
-//     ++size;
-//     return size;
-// }
-
-// int check_validiti(exppS* e, litteraux *litterauxFind,int size, int sizeTab,int monde){
-//     //On ajoute un terme positif on regarde si un négatif contredi
-
-//     if(e->type == terme){
-
-//         for (int i = 0; i < size; ++i)
-//         {
-//             if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == opp_unaire){
-//                 if(strcmp(litterauxFind[i].e->u.opp_u.op1->u.t.c,e->u.t.c) == 0){
-//                     return -1;
-//                 }
-//             }
-//         }
-//     }
-//     //On ajoute un NON
-//     else {
-//         char* c = e->u.opp_u.op1->u.t.c;
-//         for (int i = 0; i < size; ++i)
-//         {
-//             if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == terme){
-//                 if(strcmp(c,litterauxFind[i].e->u.t.c) == 0){
-//                     return -1;
-//                 }
-//             }
-//         }
-//     }
-
-//     return addLiteral(litterauxFind,e,monde,size,sizeTab);;
-// }
-
-// int testUnaire(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde);
-// int testBinaire(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde);
-// int rulesNON(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde);
-
-// int test(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde){
-//     if(e->type == opp_unaire)
-//         return testUnaire(e,litterauxFind,size,sizeTab,monde);
-//     else if(e->type == opp_binaire)
-//         return testBinaire(e,litterauxFind,size,sizeTab,monde);
-//     else{
-//         // for (int i = 0; i < size; ++i)
-//         // {
-//         //      display_exppS(litterauxFind[i].e);
-//         // }
-//         // printf("\n");
-//         // display_exppS(e);
-//         // printf("\n");
-//         int test = check_validiti(e,litterauxFind,size,sizeTab,monde);
-//         // printf("test %d\n",test);
-//         return test;
-//     }
-// }
-
-// int rulesNON(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde){
-//     // if(size < 0)
-//     //     return size;
-//     if(e->type == opp_unaire){
-//         // //a -> a
-//         if(e->u.opp_u.opp == NON){
-//             return test(e->u.opp_u.op1,litterauxFind,size,sizeTab,monde);
-//         }
-//         return -1;
-//     }
-//     else if(e->type == opp_binaire){
-//         ///(A V B) -> X: /a /b
-//         if(e->u.opp_b.opp == OU){
-//             exppS * t = create_opp_unaire(NON, e->u.opp_b.op1);
-//             size = test(t,litterauxFind,size,sizeTab,monde);
-//             free(t);
-//             if(size < 0)
-//                 return size;
-//             t = create_opp_unaire(NON, e->u.opp_b.op2);
-//             return test(t,litterauxFind,size,sizeTab,monde);
-//         }
-
-//         else if(e->u.opp_b.opp == ET){
-//             int temp;
-//             exppS * t = create_opp_unaire(NON, e->u.opp_b.op1);
-//             temp = test(t,litterauxFind,size,sizeTab,monde);
-
-//             if(temp < 0){
-//                 free(t);
-//                 t = create_opp_unaire(NON, e->u.opp_b.op2);
-//                 return test(t,litterauxFind,size,sizeTab,monde);
-//             }
-//             return temp;
-//         }
-//         return -1;
-//     }
-//     else{
-//         exppS * t = create_opp_unaire(NON, e);
-//         int test = check_validiti(t,litterauxFind,size,sizeTab,monde);
-//         free(t);
-//         return test;
-//     }
-// }
-
-
-// int testUnaire(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde){
-//     if(e->u.opp_u.opp == NON){
-//         return rulesNON(e->u.opp_u.op1, litterauxFind,size,sizeTab,monde);
-//     }
-
-//     printf("Pas encore fait\n");
-//     return 0;
-// }
-
-// int testBinaire(exppS* e, litteraux *litterauxFind, int size, int sizeTab, int monde){
-
-//     if(e->u.opp_b.opp == OU){
-//         int temp;
-
-//         temp = test(e->u.opp_b.op1,litterauxFind,size,sizeTab,monde);
-//         if(temp < 0){
-//             return test(e->u.opp_b.op2,litterauxFind,size,sizeTab,monde);
-//         }
-//         return temp;
-//     }
-
-//     if(e->u.opp_b.opp == ET){
-//         int temp;
-
-//         temp = test(e->u.opp_b.op1,litterauxFind,size,sizeTab,monde);
-//         if(temp < 0){
-//             return temp;
-//         }
-//         return test(e->u.opp_b.op2,litterauxFind,temp,sizeTab,monde);
-//     }
-
-
-//     printf("Pas encore fait\n");
-//     return 0;
-// }
-
-
 // ///////////////// SUITE
 
 
@@ -436,8 +287,38 @@ void rule7(branch* b) {
     }
 }
 
+
+void ruleWorld(branch* b,int** worldFind, int nbWorld) {
+    if(test_opp(b->e,CARRE)) {
+        for (int i = 0; i < nbWorld; ++i)
+            if(worldFind[b->monde][i] == 1)
+                add_in_branch(b,0,create_branch(b->e->u.opp_u.op1,worldFind[b->monde][i]));
+    }
+    branch *c = b;
+    while(c){
+        if(!test_opp(c->e,CARRE))
+            return;
+        c = c->nexts[0];
+    }
+    add_in_branch(b,0,create_branch(b->e,b->monde));
+}
+
+
+int rulesCreateWorld(branch *b,int** worldFind, int nbWorld){
+    if (test_opp(b->e,NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
+        ++nbWorld;
+        worldFind[b->monde][nbWorld] = 1;
+        exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
+        add_in_branch(b,0,create_branch(non_op1,nbWorld));
+    }
+    return nbWorld;   
+}
+
+
+
+
 // retourne 1 si tautologie
-int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int size) {
+int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int size, int** worldFind, int nbWorld) {
     for (int i = 0; i < sys_size; ++i) (*sys[i])(b); // appel de toutes les règles du système sys
     int temp = ruleConflit(b,litterauxFind,size);
     if (temp < 0){
@@ -447,9 +328,11 @@ int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int
     if(temp > 0)
         size = temp;
 
+
+
     int r = 0;
     if (b->nexts[0] != NULL) {
-        r = deriv_back(b->nexts[0], sys, sys_size,litterauxFind,size);
+        r = deriv_back(b->nexts[0], sys, sys_size,litterauxFind,size,worldFind,nbWorld);
     }
     //Branche valide
     if(r > 0){
@@ -457,7 +340,7 @@ int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int
         return 1;
     }
     if (b->nexts[1] != NULL) {
-        r = deriv_back(b->nexts[1], sys, sys_size, litterauxFind,size);
+        r = deriv_back(b->nexts[1], sys, sys_size, litterauxFind,size,worldFind,nbWorld);
     }
     return r;
 }
@@ -473,10 +356,16 @@ void free_branch(branch* b) {
 // retourne 1 si tautologie
 int deriv(exppS* e) {
     branch* head = create_branch(e, 0);
-    litteraux* litterauxFind = malloc(sizeof(litteraux) * 100);
+    litteraux* litterauxFind = (litteraux *)malloc(sizeof(litteraux) * 100);
     int system_K_size = 7;
     rule system_K[7] = {rule1, rule2, rule3, rule4, rule5, rule6, rule7}; // voila c'est mieux
-    int r = deriv_back(head, system_K, system_K_size,litterauxFind, 0);
+    int** worldFind = (int**)malloc(sizeof(int*) * 100);
+    for (int i = 0; i < 100; ++i)
+    {
+        worldFind[i] = (int*)malloc(sizeof(int)*100);
+    } 
+
+    int r = deriv_back(head, system_K, system_K_size,litterauxFind, 0,worldFind,0);
     display_branch(head, 0);
     free_branch(head);
     free(litterauxFind);
