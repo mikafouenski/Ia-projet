@@ -55,11 +55,21 @@ exppS* termeInf(char* buf, int* p) {
 
 exppS* unaire(char* buf, int* p, OPP o) {
     exppS* t = NULL;
-    if (is_alpha(buf[*p])) t = termeInf(buf, p);
-    else t = expp(buf, p, NULL);
+    if (is_alpha(buf[*p])) 
+        t = termeInf(buf, p);
+    else 
+        t = expp(buf, p, NULL);
     exppS* non = create_opp_unaire(o, t);
     return expp(buf, p, non);
 }
+
+int continu(char* buf,int*p){
+    if(buf[*p] == '-' || buf[*p] == '+' || buf[*p] == '*' )
+        return 1;
+    return 0;
+}
+
+
 
 exppS* expp(char* buf, int* p, exppS *herite) {
     if (buf[*p] == '/') {
@@ -85,16 +95,26 @@ exppS* expp(char* buf, int* p, exppS *herite) {
         }
     } else if (buf[*p] == '(') {
         conso(buf, p);
+        // printf("%c\n",buf[*p]);
         exppS *r = expp(buf, p,herite);
-        conso(buf, p);
-        return expp(buf, p,r);
+        if(continu(buf,p))
+            r = expp(buf, p,r);
+        if(buf[*p] == ')'){
+            conso(buf, p);
+        }
+        else
+            printf("ERRR: attendu ) \n");
+        return r;
     } else if (is_alpha(buf[*p])) {
         return expp(buf, p, termeInf(buf,p));
-    } else {
+    } else if (buf[*p] == '-'){
         exppS* r = opp_impl(buf, p, herite);
         return r;
     }
-    return herite;
+    if(continu(buf,p))
+        return expp(buf, p,herite);
+    else
+        return herite;
 }
 
 exppS* negate_exppS(exppS* e) {
@@ -129,8 +149,10 @@ void display_branch(branch* b, int indent) {
         display_exppS(b->e);
         printf("  M:%d\n", b->monde);
     }
-    if (b->nexts[0]) display_branch(b->nexts[0], indent + 1);
-    if (b->nexts[1]) display_branch(b->nexts[1], indent + 1);
+    if (b->nexts[0])
+        display_branch(b->nexts[0], indent + 1);
+    if (b->nexts[1])
+        display_branch(b->nexts[1], indent + 1);
 }
 
 int test_opp(exppS* e, OPP o) {  // renvoie 1 si opp = o
@@ -167,13 +189,10 @@ int addLiteral(litteraux *litterauxFind,exppS* e,int monde, int size){
 int check_validity(exppS* e, litteraux *litterauxFind,int size,int monde){
     //On ajoute un terme positif on regarde si un négatif contredi
     if(e->type == terme){
-        printf("%s\n",e->u.t.c);
         for (int i = 0; i < size; ++i)
         {
-            printf("non %s",litterauxFind[i].e->u.opp_u.op1->u.t.c);
             if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == opp_unaire){
                 if(strcmp(litterauxFind[i].e->u.opp_u.op1->u.t.c,e->u.t.c) == 0){
-                    printf("....\n");
                     return -1;
                 }
             }
@@ -182,17 +201,14 @@ int check_validity(exppS* e, litteraux *litterauxFind,int size,int monde){
     //On ajoute un NON
     else {
         char* c = e->u.opp_u.op1->u.t.c;
-        printf("non %s\n",c);
         for (int i = 0; i < size; ++i)
         {
             if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == terme){
                 printf("%s",litterauxFind[i].e->u.t.c);
                 if(strcmp(c,litterauxFind[i].e->u.t.c) == 0){
-                    printf("....\n");
                     return -1;
                 }
             }
-            printf("\n");
         }
     }
     return addLiteral(litterauxFind,e,monde,size);
@@ -215,7 +231,7 @@ void rule2(branch* b) {
         add_in_branch(b,0,create_branch(op1, b->monde));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
-        add_in_branch(b,1,create_branch(op2, b->monde));
+        add_in_branch(b,0,create_branch(op2, b->monde));
     }
 }
 
@@ -308,15 +324,13 @@ void ruleWorld(branch* b,int** worldFind) {
             }
             c = c->nexts[0];
         }
+
         for (int i = 0; i < nbWorld+1; ++i){
             if(worldFind[b->monde][i] == 1){
                 add_in_branch(b,0,create_branch(b->e->u.opp_u.op1,worldFind[b->monde][i]));
                 bool = 1;
             }
-        }
-
-        
-        
+        }   
     }
 }
 
@@ -324,7 +338,6 @@ void ruleWorld(branch* b,int** worldFind) {
 
 int rulesCreateWorld(branch *b,int** worldFind){
     if (test_opp(b->e,NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
-        printf("pk\n");
         ++nbWorld;
         worldFind[b->monde][nbWorld] = 1;
         exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
@@ -337,6 +350,7 @@ int rulesCreateWorld(branch *b,int** worldFind){
 // retourne 1 si tautologie
 int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int size, int** worldFind, int nbWorld) {
     for (int i = 0; i < sys_size; ++i) (*sys[i])(b); // appel de toutes les règles du système sys
+    
     int temp = ruleConflit(b,litterauxFind,size);
     if (temp < 0){
         return -1;
