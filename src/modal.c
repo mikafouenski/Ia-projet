@@ -14,12 +14,12 @@ void add_in_branch(branch* b, int indi, branch* add) {
 
 }
 
-branch* create_branch(exppS* e, int monde) {
+branch* create_branch(exppS* e, int world) {
     branch* b = (branch*) malloc(sizeof(branch));
     b->nexts[0] = NULL;
     b->nexts[1] = NULL;
     b->e = e;
-    b->monde = monde;
+    b->world = world;
     return b;
 }
 
@@ -27,7 +27,7 @@ void display_branch(branch* b, int indent) {
     for (int i = 0; i < indent; ++i) printf("  ");
     if (b->e != NULL) {
         display_exppS(b->e);
-        printf("  M:%d\n", b->monde);
+        printf("  M:%d\n", b->world);
     }
     if (b->nexts[0])
         display_branch(b->nexts[0], indent + 1);
@@ -59,9 +59,9 @@ int is_non_terme(exppS* e) {
     return test_opp(e, NON) && is_terme(e->u.opp_u.op1);
 }
 
-int addLiteral(litteraux *litterauxFind, exppS* e, int monde, int size) {
+int addLiteral(litteraux *litterauxFind, exppS* e, int world, int size) {
     litterauxFind[size].e = e;
-    litterauxFind[size].monde = monde;
+    litterauxFind[size].world = world;
     ++size;
     return size;
 }
@@ -77,24 +77,24 @@ void display_litteraux(litteraux* litterauxFind, int size) {
     printf("\n");
 }
 
-int check_validity(exppS* e, litteraux *litterauxFind, int size, int monde) {
+int check_validity(exppS* e, litteraux *litterauxFind, int size, int world) {
     //On ajoute un terme positif on regarde si un négatif contredi
     if(e->type == terme) {
         for (int i = 0; i < size; ++i)
-            if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == opp_unaire)
+            if(litterauxFind[i].world == world && litterauxFind[i].e->type == opp_unaire)
                 if(strcmp(litterauxFind[i].e->u.opp_u.op1->u.t.c, e->u.t.c) == 0)
                     return -1;
     } else { //On ajoute un NON
         char* c = e->u.opp_u.op1->u.t.c;
         for (int i = 0; i < size; ++i) {
-            if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == terme) {
+            if(litterauxFind[i].world == world && litterauxFind[i].e->type == terme) {
                 printf("%s", litterauxFind[i].e->u.t.c);
                 if(strcmp(c, litterauxFind[i].e->u.t.c) == 0)
                     return -1;
             }
         }
     }
-    return addLiteral(litterauxFind, e, monde, size);
+    return addLiteral(litterauxFind, e, world, size);
 }
 
 // //a = a
@@ -102,7 +102,7 @@ void rule_base_1(branch* b) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, NON)) { // j'ai trouver //a
         exppS* t = (exppS*) malloc(sizeof(exppS));
         memcpy(t, b->e->u.opp_u.op1->u.opp_u.op1, sizeof(exppS));
-        add_in_branch(b, 0, create_branch(t, b->monde));
+        add_in_branch(b, 0, create_branch(t, b->world));
     }
 }
 
@@ -111,10 +111,10 @@ void rule_base_2(branch* b) {
     if (test_opp(b->e, ET)) { // j'ai trouver a^b
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
-        add_in_branch(b, 0, create_branch(op1, b->monde));
+        add_in_branch(b, 0, create_branch(op1, b->world));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
-        add_in_branch(b, 0, create_branch(op2, b->monde));
+        add_in_branch(b, 0, create_branch(op2, b->world));
     }
 }
 
@@ -124,11 +124,11 @@ void rule_base_3(branch* b) {
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
         exppS* non_op1 = negate_exppS(op1);
-        add_in_branch(b, 0, create_branch(non_op1, b->monde));
+        add_in_branch(b, 0, create_branch(non_op1, b->world));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
         exppS* non_op2 = negate_exppS(op2);
-        add_in_branch(b, 0, create_branch(non_op2, b->monde));
+        add_in_branch(b, 0, create_branch(non_op2, b->world));
     }
 }
 
@@ -137,11 +137,11 @@ void rule_base_4(branch* b) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, IMPLIQUE)) { // /(A->B)
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
-        add_in_branch(b, 0, create_branch(op1, b->monde));
+        add_in_branch(b, 0, create_branch(op1, b->world));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
         exppS* non_op2 = negate_exppS(op2);
-        add_in_branch(b, 0, create_branch(non_op2, b->monde));
+        add_in_branch(b, 0, create_branch(non_op2, b->world));
     }
 }
 
@@ -150,10 +150,10 @@ void rule_base_5(branch* b) {
     if (test_opp(b->e, OU)) { // j'ai trouver AvB
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
-        add_in_branch(b, 0, create_branch(op1, b->monde));
+        add_in_branch(b, 0, create_branch(op1, b->world));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
-        add_in_branch(b, 1, create_branch(op2, b->monde));
+        add_in_branch(b, 1, create_branch(op2, b->world));
     }
 }
 
@@ -163,17 +163,17 @@ void rule_base_6(branch* b) {
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
         exppS* non_op1 = negate_exppS(op1);
-        add_in_branch(b, 0, create_branch(non_op1, b->monde));
+        add_in_branch(b, 0, create_branch(non_op1, b->world));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
         exppS* non_op2 = negate_exppS(op2);
-        add_in_branch(b, 1, create_branch(non_op2, b->monde));
+        add_in_branch(b, 1, create_branch(non_op2, b->world));
     }
 }
 
 int ruleConflit(branch* b, litteraux* litterauxFind, int size) {
     if(is_terme(b->e) || is_non_terme(b->e))
-        return check_validity(b->e, litterauxFind, size, b->monde);
+        return check_validity(b->e, litterauxFind, size, b->world);
     return 0;
 }
 
@@ -183,10 +183,10 @@ void rule_base_7(branch* b) {
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
         exppS* non_op1 = negate_exppS(op1);
-        add_in_branch(b, 0, create_branch(non_op1, b->monde));
+        add_in_branch(b, 0, create_branch(non_op1, b->world));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
-        add_in_branch(b, 1, create_branch(op2, b->monde));
+        add_in_branch(b, 1, create_branch(op2, b->world));
     }
 }
 
@@ -198,38 +198,36 @@ void rule_base_8(branch* b) {
         exppS* non_op1 = negate_exppS(op1);
         exppS* carre = create_opp_unaire(CARRE, non_op1);
         exppS* non_carre = negate_exppS(carre);
-        add_in_branch(b, 0, create_branch(non_carre, b->monde));
+        add_in_branch(b, 0, create_branch(non_carre, b->world));
     }
 }
 
 // [][]A = []A
 void rule_4_1(branch *b){
     if(test_opp(b->e,CARRE) && test_opp(b->e->u.opp_u.op1, CARRE)){
-        add_in_branch(b, 0, create_branch(b->e->u.opp_u.op1, b->monde));
+        add_in_branch(b, 0, create_branch(b->e->u.opp_u.op1, b->world));
     }
 }
 
 void add_in_all_branch(branch* b, branch* new_branch) {
-    if(b->nexts[0] == NULL){
-        b->nexts[0] = new_branch;
-    }
-    if (b->nexts[0]) add_in_all_branch(b->nexts[0], new_branch);
+    if (b->nexts[0] == NULL) b->nexts[0] = new_branch;
+    else add_in_all_branch(b->nexts[0], new_branch);
     if (b->nexts[1]) add_in_all_branch(b->nexts[1], new_branch);
 }
 
 void system_k_1(branch* b, int** worldFind, int* nbWorld) {
     if(test_opp(b->e, CARRE)) {
-        add_in_all_branch(b, create_branch(b->e, b->monde));
+        add_in_all_branch(b, create_branch(b->e, b->world));
         for (int i = 0; i < *nbWorld + 1; ++i)
-            if(worldFind[b->monde][i] == 1)
-                add_in_branch(b, 0, create_branch(b->e->u.opp_u.op1, worldFind[b->monde][i]));
+            if(worldFind[b->world][i] == 1)
+                add_in_branch(b, 0, create_branch(b->e->u.opp_u.op1, worldFind[b->world][i]));
     }
 }
 
-void replicWorld(int ** worldFind,int* nbWorld,int monde){
-    for (int i = 0; i < monde; ++i)
+void replicWorld(int ** worldFind,int* nbWorld,int world){
+    for (int i = 0; i < world; ++i)
     {
-        if(worldFind[i][monde] == 1){
+        if(worldFind[i][world] == 1){
             worldFind[i][*nbWorld] = 1;
         }
     }
@@ -238,9 +236,9 @@ void replicWorld(int ** worldFind,int* nbWorld,int monde){
 void system_k_2(branch *b, int** worldFind, int* nbWorld) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
         (*nbWorld)++;
-        replicWorld(worldFind,nbWorld,b->monde);
-        worldFind[b->monde][*nbWorld] = 1;
-        
+        replicWorld(worldFind,nbWorld,b->world);
+        worldFind[b->world][*nbWorld] = 1;
+
         exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
         add_in_branch(b, 0, create_branch(non_op1, *nbWorld));
     }
@@ -250,9 +248,9 @@ void system_k_2(branch *b, int** worldFind, int* nbWorld) {
 void system_4_2(branch *b, int** worldFind, int* nbWorld) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
         (*nbWorld)++;
-        
-        worldFind[b->monde][*nbWorld] = 1;
-        
+
+        worldFind[b->world][*nbWorld] = 1;
+
         exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
         add_in_branch(b, 0, create_branch(non_op1, *nbWorld));
     }
@@ -278,7 +276,7 @@ int allBranch(branch* b) {
 // retourne 1 si tautologie
 int deriv_back(branch* b, rule_base* base, int base_size, syst* extension, int extension_size, litteraux* litterauxFind, int size, int** worldFind, int* nbWorld) {
     while(b!= NULL && isBranch(b)) {
-        if(!allBranch(b->nexts[0])) add_in_branch(b, 0, create_branch(b->e, b->monde));
+        if(!allBranch(b->nexts[0])) add_in_branch(b, 0, create_branch(b->e, b->world));
         else break;
         b = b->nexts[0];
     }

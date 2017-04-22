@@ -50,12 +50,12 @@ void display_exppS(exppS* e);
 
 typedef struct litteraux {
     exppS* e;
-    int monde;
+    int world;
 } litteraux;
 
 typedef struct branch { // arbre à 2 fils
     exppS* e;
-    int monde;
+    int world;
     struct branch* nexts[2];
 } branch;
 
