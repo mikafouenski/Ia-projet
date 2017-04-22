@@ -30,10 +30,12 @@ void display_branch(branch* b, int indent) {
         display_exppS(b->e);
         printf("  M:%d\n", b->monde);
     }
-    if (b->nexts[0])
+    if (b->nexts[0]){
         display_branch(b->nexts[0], indent + 1);
-    if (b->nexts[1])
+    }
+    if (b->nexts[1]){
         display_branch(b->nexts[1], indent + 1);
+    }
 }
 
 int test_opp(exppS* e, OPP o) {  // renvoie 1 si opp = o
@@ -67,9 +69,26 @@ int addLiteral(litteraux *litterauxFind,exppS* e,int monde, int size){
     return size;
 }
 
+void display_litteraux(litteraux* litterauxFind, int size){
+    printf("déjas trouver %d\n",size);
+    for (int i = 0; i < size; ++i)
+    {
+        if(litterauxFind[i].e->type == terme){
+            printf("%s-",litterauxFind[i].e->u.t.c);
+        }else{
+            printf("non(%s)-",litterauxFind[i].e->u.opp_u.op1->u.t.c);
+        }
+    }
+    printf("\n");
+}
+
 int check_validity(exppS* e, litteraux *litterauxFind,int size,int monde){
     //On ajoute un terme positif on regarde si un négatif contredi
+    // printf("\n");
+    // display_litteraux(litterauxFind,size);
+    // printf("\n");
     if(e->type == terme){
+
         for (int i = 0; i < size; ++i)
         {
             if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == opp_unaire){
@@ -220,10 +239,44 @@ int rulesCreateWorld(branch *b,int** worldFind){
     return nbWorld;
 }
 
+int isBranch(branch* b){
+    if(test_opp(b->e,NON) && test_opp(b->e->u.opp_u.op1,ET)){
+        return 1;
+    }
+    if(test_opp(b->e,IMPLIQUE)){
+        return 1;
+    }
+    if(test_opp(b->e,OU)){
+        return 1;
+    }
+    return 0;
+}
+
+int allBranch(branch* b){
+    branch *tmp = b;
+    while(tmp){
+        if(!isBranch(b)){
+            return 0;
+        }
+        tmp = tmp->nexts[0];
+    }
+    return 1;
+}
+
 // retourne 1 si tautologie
 int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int size, int** worldFind, int nbWorld) {
-    for (int i = 0; i < sys_size; ++i) (*sys[i])(b); // appel de toutes les règles du système sys
+    while(b!= NULL && isBranch(b)){
+        if(!allBranch(b->nexts[0]))
+            add_in_branch(b,0,create_branch(b->e,b->monde));
+        else 
+            break;       
+        b = b->nexts[0];
+    }
 
+    for (int i = 0; i < sys_size; ++i) (*sys[i])(b); // appel de toutes les règles du système sys
+    // printf("\n");
+    // display_branch(b,0);
+    // printf("\n");
     int temp = ruleConflit(b,litterauxFind,size);
     if (temp < 0){
         return -1;
