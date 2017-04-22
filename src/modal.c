@@ -6,11 +6,10 @@ exppS* negate_exppS(exppS* e) {
     return n;
 }
 
-void add_in_branch(branch* b, int indi, branch* add){
+void add_in_branch(branch* b, int indi, branch* add) {
     branch * elm = b;
-    while(elm->nexts[indi]){
+    while(elm->nexts[indi])
         elm = elm->nexts[indi];
-    }
     elm->nexts[indi]= add;
 
 }
@@ -30,12 +29,10 @@ void display_branch(branch* b, int indent) {
         display_exppS(b->e);
         printf("  M:%d\n", b->monde);
     }
-    if (b->nexts[0]){
+    if (b->nexts[0])
         display_branch(b->nexts[0], indent + 1);
-    }
-    if (b->nexts[1]){
+    if (b->nexts[1])
         display_branch(b->nexts[1], indent + 1);
-    }
 }
 
 int test_opp(exppS* e, OPP o) {  // renvoie 1 si opp = o
@@ -62,215 +59,184 @@ int is_non_terme(exppS* e) {
     return test_opp(e, NON) && is_terme(e->u.opp_u.op1);
 }
 
-int addLiteral(litteraux *litterauxFind,exppS* e,int monde, int size){
+int addLiteral(litteraux *litterauxFind, exppS* e, int monde, int size) {
     litterauxFind[size].e = e;
     litterauxFind[size].monde = monde;
     ++size;
     return size;
 }
 
-void display_litteraux(litteraux* litterauxFind, int size){
-    printf("déjas trouver %d\n",size);
-    for (int i = 0; i < size; ++i)
-    {
-        if(litterauxFind[i].e->type == terme){
-            printf("%s-",litterauxFind[i].e->u.t.c);
-        }else{
-            printf("non(%s)-",litterauxFind[i].e->u.opp_u.op1->u.t.c);
-        }
+void display_litteraux(litteraux* litterauxFind, int size) {
+    printf("déjas trouver %d\n", size);
+    for (int i = 0; i < size; ++i) {
+        if(litterauxFind[i].e->type == terme)
+            printf("%s-", litterauxFind[i].e->u.t.c);
+        else
+            printf("non(%s)-", litterauxFind[i].e->u.opp_u.op1->u.t.c);
     }
     printf("\n");
 }
 
-int check_validity(exppS* e, litteraux *litterauxFind,int size,int monde){
+int check_validity(exppS* e, litteraux *litterauxFind, int size, int monde) {
     //On ajoute un terme positif on regarde si un négatif contredi
-    // printf("\n");
-    // display_litteraux(litterauxFind,size);
-    // printf("\n");
-    if(e->type == terme){
-
+    if(e->type == terme) {
         for (int i = 0; i < size; ++i)
-        {
-            if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == opp_unaire){
-                if(strcmp(litterauxFind[i].e->u.opp_u.op1->u.t.c,e->u.t.c) == 0){
+            if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == opp_unaire)
+                if(strcmp(litterauxFind[i].e->u.opp_u.op1->u.t.c, e->u.t.c) == 0)
                     return -1;
-                }
-            }
-        }
-    }
-    //On ajoute un NON
-    else {
+    } else { //On ajoute un NON
         char* c = e->u.opp_u.op1->u.t.c;
-        for (int i = 0; i < size; ++i)
-        {
-            if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == terme){
-                printf("%s",litterauxFind[i].e->u.t.c);
-                if(strcmp(c,litterauxFind[i].e->u.t.c) == 0){
+        for (int i = 0; i < size; ++i) {
+            if(litterauxFind[i].monde == monde && litterauxFind[i].e->type == terme) {
+                printf("%s", litterauxFind[i].e->u.t.c);
+                if(strcmp(c, litterauxFind[i].e->u.t.c) == 0)
                     return -1;
-                }
             }
         }
     }
-    return addLiteral(litterauxFind,e,monde,size);
+    return addLiteral(litterauxFind, e, monde, size);
 }
 
 // //a = a
-void rule1(branch* b) {
+void rule_base_1(branch* b) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, NON)) { // j'ai trouver //a
         exppS* t = (exppS*) malloc(sizeof(exppS));
         memcpy(t, b->e->u.opp_u.op1->u.opp_u.op1, sizeof(exppS));
-        add_in_branch(b,0,create_branch(t, b->monde));
+        add_in_branch(b, 0, create_branch(t, b->monde));
     }
 }
 
 // a^b = a  b
-void rule2(branch* b) {
+void rule_base_2(branch* b) {
     if (test_opp(b->e, ET)) { // j'ai trouver a^b
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
-        add_in_branch(b,0,create_branch(op1, b->monde));
+        add_in_branch(b, 0, create_branch(op1, b->monde));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
-        add_in_branch(b,0,create_branch(op2, b->monde));
+        add_in_branch(b, 0, create_branch(op2, b->monde));
     }
 }
 
 // /(AvB) = /a  /b
-void rule3(branch* b) {
+void rule_base_3(branch* b) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, OU)) { // /(AvB)
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
         exppS* non_op1 = negate_exppS(op1);
-        add_in_branch(b,0,create_branch(non_op1, b->monde));
+        add_in_branch(b, 0, create_branch(non_op1, b->monde));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
         exppS* non_op2 = negate_exppS(op2);
-        add_in_branch(b,0,create_branch(non_op2, b->monde));
+        add_in_branch(b, 0, create_branch(non_op2, b->monde));
     }
 }
 
 // /(A->B) = a  /b
-void rule4(branch* b) {
+void rule_base_4(branch* b) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, IMPLIQUE)) { // /(A->B)
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
-        add_in_branch(b,0,create_branch(op1, b->monde));
+        add_in_branch(b, 0, create_branch(op1, b->monde));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
         exppS* non_op2 = negate_exppS(op2);
-        add_in_branch(b,0,create_branch(non_op2, b->monde));
+        add_in_branch(b, 0, create_branch(non_op2, b->monde));
     }
 }
 
 // AvB = a | b     -> on branche
-void rule5(branch* b) {
+void rule_base_5(branch* b) {
     if (test_opp(b->e, OU)) { // j'ai trouver AvB
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
-        add_in_branch(b,0,create_branch(op1, b->monde));
+        add_in_branch(b, 0, create_branch(op1, b->monde));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
-        add_in_branch(b,1,create_branch(op2, b->monde));
+        add_in_branch(b, 1, create_branch(op2, b->monde));
     }
 }
 
 // /(A^B) = /a | /b     -> on branche
-void rule6(branch* b) {
+void rule_base_6(branch* b) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, ET)) { // j'ai trouver /(a^b)
-        printf("rule6\n");
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_u.op1->u.opp_b.op1, sizeof(exppS));
         exppS* non_op1 = negate_exppS(op1);
-        add_in_branch(b,0,create_branch(non_op1, b->monde));
+        add_in_branch(b, 0, create_branch(non_op1, b->monde));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_u.op1->u.opp_b.op2, sizeof(exppS));
         exppS* non_op2 = negate_exppS(op2);
-        add_in_branch(b,1,create_branch(non_op2, b->monde));
+        add_in_branch(b, 1, create_branch(non_op2, b->monde));
     }
 }
 
-int ruleConflit(branch* b,litteraux* litterauxFind,int size){
-    if(is_terme(b->e) || is_non_terme(b->e)){
-        return check_validity(b->e,litterauxFind,size,b->monde);
-    }
+int ruleConflit(branch* b, litteraux* litterauxFind, int size) {
+    if(is_terme(b->e) || is_non_terme(b->e))
+        return check_validity(b->e, litterauxFind, size, b->monde);
     return 0;
 }
 
 // A->B = /a | b     -> on branche
-void rule7(branch* b) {
+void rule_base_7(branch* b) {
     if (test_opp(b->e, IMPLIQUE)) { // j'ai trouver A->B
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
         exppS* non_op1 = negate_exppS(op1);
-        add_in_branch(b,0,create_branch(non_op1, b->monde));
+        add_in_branch(b, 0, create_branch(non_op1, b->monde));
         exppS* op2 = (exppS*) malloc(sizeof(exppS));
         memcpy(op2, b->e->u.opp_b.op2, sizeof(exppS));
-        add_in_branch(b,1,create_branch(op2, b->monde));
+        add_in_branch(b, 1, create_branch(op2, b->monde));
     }
 }
 
 // <>A = /[]/a
-void rule8(branch* b) {
-    if (test_opp(b->e,LOSANGE)) { // j'ai trouver A->B
+void rule_base_8(branch* b) {
+    if (test_opp(b->e, LOSANGE)) { // j'ai trouver A->B
         exppS* op1 = (exppS*) malloc(sizeof(exppS));
         memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
         exppS* non_op1 = negate_exppS(op1);
         exppS* carre = create_opp_unaire(CARRE, non_op1);
         exppS* non_carre = negate_exppS(carre);
-        add_in_branch(b,0,create_branch(non_carre, b->monde));
+        add_in_branch(b, 0, create_branch(non_carre, b->monde));
     }
 }
 
-
-
-int nbWorld = 0;
-
-void ruleWorld(branch* b,int** worldFind) {
-    if(test_opp(b->e,CARRE)) {
+void system_k_1(branch* b, int** worldFind, int* nbWorld) {
+    if(test_opp(b->e, CARRE)) {
         branch *c = b;
-        while(c){
-            if(!test_opp(c->e,CARRE)){
-                add_in_branch(b,0,create_branch(b->e,b->monde));
+        while(c) {
+            if(! test_opp(c->e, CARRE)) {
+                add_in_branch(b, 0, create_branch(b->e, b->monde));
                 return;
             }
             c = c->nexts[0];
         }
-
-        for (int i = 0; i < nbWorld+1; ++i){
-            if(worldFind[b->monde][i] == 1){
-                add_in_branch(b,0,create_branch(b->e->u.opp_u.op1,worldFind[b->monde][i]));
-            }
-        }
+        for (int i = 0; i < *nbWorld + 1; ++i)
+            if(worldFind[b->monde][i] == 1)
+                add_in_branch(b, 0, create_branch(b->e->u.opp_u.op1, worldFind[b->monde][i]));
     }
 }
 
-int rulesCreateWorld(branch *b,int** worldFind){
-    if (test_opp(b->e,NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
-        ++nbWorld;
-        worldFind[b->monde][nbWorld] = 1;
+void system_k_2(branch *b, int** worldFind, int* nbWorld) {
+    if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
+        (*nbWorld)++;
+        worldFind[b->monde][*nbWorld] = 1;
         exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
-        add_in_branch(b,0,create_branch(non_op1,nbWorld));
+        add_in_branch(b, 0, create_branch(non_op1, *nbWorld));
     }
-    return nbWorld;
 }
 
-int isBranch(branch* b){
-    if(test_opp(b->e,NON) && test_opp(b->e->u.opp_u.op1,ET)){
-        return 1;
-    }
-    if(test_opp(b->e,IMPLIQUE)){
-        return 1;
-    }
-    if(test_opp(b->e,OU)){
-        return 1;
-    }
-    return 0;
+int isBranch(branch* b) {
+    return (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, ET)) ||
+        (test_opp(b->e, IMPLIQUE)) ||
+        (test_opp(b->e, OU));
 }
 
-int allBranch(branch* b){
+int allBranch(branch* b) {
     branch *tmp = b;
-    while(tmp){
-        if(!isBranch(b)){
+    while(tmp) {
+        if(!isBranch(b)) {
             return 0;
         }
         tmp = tmp->nexts[0];
@@ -279,39 +245,31 @@ int allBranch(branch* b){
 }
 
 // retourne 1 si tautologie
-int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int size, int** worldFind, int nbWorld) {
-    while(b!= NULL && isBranch(b)){
-        if(!allBranch(b->nexts[0]))
-            add_in_branch(b,0,create_branch(b->e,b->monde));
-        else 
-            break;       
+int deriv_back(branch* b, rule_base* base, int base_size, syst* extension, int extension_size, litteraux* litterauxFind, int size, int** worldFind, int* nbWorld) {
+    while(b!= NULL && isBranch(b)) {
+        if(!allBranch(b->nexts[0])) add_in_branch(b, 0, create_branch(b->e, b->monde));
+        else break;
         b = b->nexts[0];
     }
 
-    for (int i = 0; i < sys_size; ++i) (*sys[i])(b); // appel de toutes les règles du système sys
-    
-    int temp = ruleConflit(b,litterauxFind,size);
-    if (temp < 0){
-        return -1;
-    }
-    if(temp > 0)
-        size = temp;
+    for (int i = 0; i < base_size; ++i) (*base[i])(b); // appel de toutes les règles du système base
 
-    ruleWorld(b,worldFind);
-    nbWorld = rulesCreateWorld(b,worldFind);
+    int temp = ruleConflit(b, litterauxFind, size);
+    if (temp < 0) return -1;
+    if(temp > 0) size = temp;
+
+    for (int i = 0; i < extension_size; ++i) (*extension[i])(b, worldFind, nbWorld); // appel des regles du systeme d'extension
 
     int r = 0;
-    if (b->nexts[0] != NULL) {
-        r = deriv_back(b->nexts[0], sys, sys_size,litterauxFind,size,worldFind,nbWorld);
-    }
+    if (b->nexts[0] != NULL)
+        r = deriv_back(b->nexts[0], base, base_size, extension, extension_size, litterauxFind, size, worldFind, nbWorld);
     //Branche valide
-    if(r > 0){
+    if(r > 0) {
         printf("Branche juste trouver\n");
         return 1;
     }
-    if (b->nexts[1] != NULL) {
-        r = deriv_back(b->nexts[1], sys, sys_size, litterauxFind,size,worldFind,nbWorld);
-    }
+    if (b->nexts[1] != NULL)
+        r = deriv_back(b->nexts[1], base, base_size, extension, extension_size, litterauxFind, size, worldFind, nbWorld);
     return r;
 }
 
@@ -326,15 +284,23 @@ void free_branch(branch* b) {
 // retourne 1 si tautologie
 int deriv(exppS* e) {
     branch* head = create_branch(e, 0);
+
     litteraux* litterauxFind = (litteraux*) malloc(sizeof(litteraux) * 100);
-    int system_K_size = 8;
-    rule system_K[8] = {rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8}; // voila c'est mieux
+    int system_base_size = 8;
+    rule_base system_base[8] = {rule_base_1, rule_base_2, rule_base_3,
+                                rule_base_4, rule_base_5, rule_base_6,
+                                rule_base_7, rule_base_8};
+
+    int system_k_size = 2;
+    syst system_k[2] = {system_k_1, system_k_2};
+
     int** worldFind = (int**) malloc(sizeof(int*) * 100);
     for (int i = 0; i < 100; ++i)
-    {
         worldFind[i] = (int*) malloc(sizeof(int)*100);
-    }
-    int r = deriv_back(head, system_K, system_K_size,litterauxFind, 0,worldFind,0);
+
+    int nbWorld = 0;
+    int r = deriv_back(head, system_base, system_base_size, system_k, system_k_size, litterauxFind, 0, worldFind, &nbWorld);
+
     display_branch(head, 0);
     free_branch(head);
     free(litterauxFind);

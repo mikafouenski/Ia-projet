@@ -59,6 +59,8 @@ typedef struct branch { // arbre à 2 fils
     struct branch* nexts[2];
 } branch;
 
-typedef void (*rule) (branch*);
+typedef void (*rule_base) (branch*);
+
+typedef void (*syst) (branch*, int**, int*);
 
 #endif

@@ -38,17 +38,6 @@ int main(int argc, char const *argv[]) {
     display_exppS(n);
     printf("\n");
 
-    // litteraux *litterauxFind = malloc(sizeof(litteraux)* 100);
-
-    // int result = test(n,litterauxFind,0,100,1);
-    // if(result > 0){
-    //     printf("Pas une totologie\n");
-    // }
-    // else
-    //     printf("Totologie\n");
-
-    // free(litterauxFind);
-
     int tautologie = deriv(n);
     if (tautologie < 0) printf("TAUTOLOGIE ! ! !\n");
     else printf("PAS TAUTOLOGIE ! ! !\n");
