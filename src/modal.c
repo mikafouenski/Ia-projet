@@ -1,6 +1,9 @@
 #include "modal.h"
 #include <string.h>
 
+exppS* expp_n(char* buf, int* p);
+exppS* opp_b(char* buf,int *p,exppS * herite);
+
 void eat_char(char* buf, int* p) {
     while(buf[*p] == ' ' || buf[*p] == '\n' || buf[*p] == '\t') (*p)++;
 }
@@ -16,35 +19,39 @@ exppS* opp_impl(char* buf, int* p, exppS* h) {
         conso(buf, p);
         if (buf[*p] == '>') {
             conso(buf, p);
-            exppS* r = expp(buf, p, NULL);
+            exppS* r = expp_n(buf, p);
             exppS* impl = create_opp_binaire(IMPLIQUE, h, r);
-            return impl;
+            return opp_b(buf,p,impl);
         } else {
             printf("ERRR: attendu < \'>\' >\n");
             exit(1);
         }
     }
-    return opp_ou(buf, p, h);
+    return h;
 }
 
 exppS* opp_ou(char* buf, int* p, exppS* h) {
     if (buf[*p] == '+') {
         conso(buf, p);
-        exppS* r = expp(buf, p, NULL);
+        exppS* r = expp_n(buf, p);
         exppS* ou = create_opp_binaire(OU, h, r);
-        return ou;
+        return opp_b(buf,p,ou);
     }
-    return opp_et(buf, p, h);
+    return opp_impl(buf, p, h);
 }
 
 exppS* opp_et(char* buf, int* p, exppS* h) {
     if (buf[*p] == '*') {
         conso(buf, p);
-        exppS* r = expp(buf, p, NULL);
+        exppS* r = expp_n(buf, p);
         exppS* et = create_opp_binaire(ET, h, r);
-        return et;
-    }
-    return h;
+        return opp_b(buf,p,et);
+    } else  
+        return opp_ou(buf,p,h);
+}
+
+exppS* opp_b(char* buf,int *p,exppS * herite){
+    return opp_et(buf,p,herite);
 }
 
 exppS* termeInf(char* buf, int* p) {
@@ -53,69 +60,111 @@ exppS* termeInf(char* buf, int* p) {
     return t;
 }
 
-exppS* unaire(char* buf, int* p, OPP o) {
-    exppS* t = NULL;
-    if (is_alpha(buf[*p])) 
-        t = termeInf(buf, p);
-    else 
-        t = expp(buf, p, NULL);
-    exppS* non = create_opp_unaire(o, t);
-    return expp(buf, p, non);
+exppS* expp_Par(char *buf,int *p){
+    conso(buf, p);
+    exppS *r = expp_n(buf, p);
+    if(buf[*p] == ')'){
+        conso(buf, p);
+    }else
+        printf("ERRR: attendu ) \n");
+    return r;
 }
 
-int continu(char* buf,int*p){
+exppS* unaire(char* buf, int* p, OPP o) {
+    exppS* t = NULL;
+    if (is_alpha(buf[*p])) {
+        t = termeInf(buf, p);
+    } else if(buf[*p] == '('){
+        t = expp_Par(buf,p);
+    } else
+         printf("ERRR: attendu ( ou \'VAR\' \n");
+    exppS* r = create_opp_unaire(o, t);
+    return r;
+}
+
+int isOpp_b(char* buf,int*p) {
     if(buf[*p] == '-' || buf[*p] == '+' || buf[*p] == '*' )
         return 1;
     return 0;
 }
 
-
-
-exppS* expp(char* buf, int* p, exppS *herite) {
-    if (buf[*p] == '/') {
-        conso(buf, p);
-        return unaire(buf, p, NON);
-    } else if (buf[*p] == '[') {
-        conso(buf, p);
-        if (buf[*p] == ']') {
-            conso(buf, p);
-            return unaire(buf, p, CARRE);
-        } else {
-            printf("ERRR: attendu < ] >\n");
-            exit(1);
-        }
-    } else if (buf[*p] == '<') {
-        conso(buf, p);
-        if (buf[*p] == '>') {
-            conso(buf, p);
-            return unaire(buf, p, LOSANGE);
-        } else {
-            printf("ERRR: attendu < \'<\' >\n");
-            exit(1);
-        }
-    } else if (buf[*p] == '(') {
-        conso(buf, p);
-        // printf("%c\n",buf[*p]);
-        exppS *r = expp(buf, p,herite);
-        if(continu(buf,p))
-            r = expp(buf, p,r);
-        if(buf[*p] == ')'){
-            conso(buf, p);
-        }
-        else
-            printf("ERRR: attendu ) \n");
-        return r;
-    } else if (is_alpha(buf[*p])) {
-        return expp(buf, p, termeInf(buf,p));
-    } else if (buf[*p] == '-'){
-        exppS* r = opp_impl(buf, p, herite);
-        return r;
-    }
-    if(continu(buf,p))
-        return expp(buf, p,herite);
-    else
-        return herite;
+int isOpp_u(char* buf,int *p){
+    if(buf[*p] == '/' || buf[*p] == '[' || buf[*p] == '<' )
+        return 1;
+    return 0;
 }
+
+
+exppS* opp_Non(char *buf, int *p){
+    conso(buf, p);
+    return unaire(buf, p, NON);
+}
+
+exppS* opp_Car(char *buf,int *p){
+    conso(buf, p);
+    if (buf[*p] == ']') {
+        conso(buf, p);
+        return unaire(buf, p, CARRE);
+    } else {
+        printf("ERRR: attendu < ] >\n");
+        exit(1);
+    }
+}
+
+exppS* opp_los(char *buf, int* p){
+    conso(buf, p);
+    if (buf[*p] == '>') {
+        conso(buf, p);
+        return unaire(buf, p, LOSANGE);
+    } else {
+        printf("ERRR: attendu < \'<\' >\n");
+        exit(1);
+    }
+}
+
+exppS* opp_u(char* buf,int* p){
+    if (buf[*p] == '/') {
+        return opp_Non(buf,p);
+    } else if (buf[*p] == '[') {
+        return opp_Car(buf,p);
+    } else {
+        return opp_los(buf,p);
+    }   
+}
+
+exppS* expp_n(char* buf, int* p) {
+    if (buf[*p] == '(') {
+        exppS* h = expp_Par(buf,p);
+        return opp_b(buf,p,h);
+    }
+    else if(isOpp_u(buf,p)){
+        exppS* h = opp_u(buf,p);
+        return opp_b(buf,p,h);
+    }else if(is_alpha(buf[*p])){
+        exppS* h  = termeInf(buf, p);
+        return opp_b(buf,p,h);
+    }
+    printf("ERREUR attendu '(' VAR \n");;
+    exit(-1);
+}
+
+
+exppS* expp(char* buf, int* p) {
+    if (buf[*p] == '(') {
+        exppS* h = expp_Par(buf,p);
+        return opp_b(buf,p,h);
+    }
+    else if(isOpp_u(buf,p)){
+        exppS* h = opp_u(buf,p);
+        return opp_b(buf,p,h);
+    
+    }else if(is_alpha(buf[*p])){
+        exppS* h  = termeInf(buf, p);
+        return opp_b(buf,p,h);
+    }
+    return NULL;
+}
+
 
 exppS* negate_exppS(exppS* e) {
     exppS* n = create_opp_unaire(NON, e);
@@ -313,8 +362,6 @@ void rule7(branch* b) {
 int nbWorld = 0;
 
 void ruleWorld(branch* b,int** worldFind) {
-    // printf("nbWorld: %d\n",nbWorld);
-    int bool = 0; 
     if(test_opp(b->e,CARRE)) {
         branch *c = b;
         while(c){
@@ -328,7 +375,6 @@ void ruleWorld(branch* b,int** worldFind) {
         for (int i = 0; i < nbWorld+1; ++i){
             if(worldFind[b->monde][i] == 1){
                 add_in_branch(b,0,create_branch(b->e->u.opp_u.op1,worldFind[b->monde][i]));
-                bool = 1;
             }
         }   
     }

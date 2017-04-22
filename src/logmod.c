@@ -1,6 +1,6 @@
-// #include "modal.h"
+#include "modal.h"
 #include "util.h"
-#include "read_formula.h"
+// #include "read_formula.h"
 
 void read_file(const char* name, char* buf) {
     FILE *f = fopen(name, "r");
@@ -25,10 +25,10 @@ int main(int argc, char const *argv[]) {
 
     read_file(argv[1], buf);
 
-    // int p = 0;
+    int p = 0;
     // exppS* r = expp(buf, &p, NULL);
-
-    exppS* r = read_formula(buf);
+    printf("%s\n",buf);
+    exppS* r = expp(buf,&p);
 
     printf("Formule :  ");
     display_exppS(r);
