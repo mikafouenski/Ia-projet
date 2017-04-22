@@ -210,8 +210,10 @@ void rule_4_1(branch *b){
 }
 
 void add_in_all_branch(branch* b, branch* new_branch) {
+    if(b->nexts[0] == NULL){
+        b->nexts[0] = new_branch;
+    }
     if (b->nexts[0]) add_in_all_branch(b->nexts[0], new_branch);
-    add_in_branch(b, 0, new_branch);
     if (b->nexts[1]) add_in_all_branch(b->nexts[1], new_branch);
 }
 
@@ -255,8 +257,6 @@ void system_4_2(branch *b, int** worldFind, int* nbWorld) {
         add_in_branch(b, 0, create_branch(non_op1, *nbWorld));
     }
 }
-
-
 
 int isBranch(branch* b) {
     return (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, ET)) ||
