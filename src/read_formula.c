@@ -90,7 +90,11 @@ exppS* unaire(char* formula, int* p, OPP o) {
         t = termeInf(formula, p);
     } else if(formula[*p] == '(') {
         t = expp_Par(formula, p);
-    } else {
+    } else if(isOpp_u(formula, p)){
+        if(formula)
+        t = opp_u(formula,p);
+    } 
+    else {
         printf("ERRR: attendu ( ou \'VAR\' \n");
         exit(1);
     }
