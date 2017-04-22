@@ -1,147 +1,178 @@
 #include "read_formula.h"
 
-#define is_maj(c)(('A' <= (c)) && ((c) <= 'Z'))
-#define is_min(c)(('a' <= (c)) && ((c) <= 'z'))
-#define is_alpha(c)(is_maj(c) || is_min(c))
+void conso(char* formula, int* p);
 
-void consomate(char* formula, int* p) {
-    (*p)++;
+exppS* opp_impl(char* formula, int* p, exppS* h);
+exppS* opp_ou(char* formula, int* p, exppS* h);
+exppS* opp_et(char* formula, int* p, exppS* h);
+exppS* opp_b(char* formula, int *p,exppS * herite);
+exppS* expp_Par(char *formula, int *p);
+exppS* unaire(char* formula, int* p, OPP o);
+int isOpp_b(char* formula, int*p);
+int isOpp_u(char* formula, int *p);
+exppS* opp_Car(char *formula, int *p);
+exppS* opp_los(char *formula, int* p);
+exppS* opp_u(char* formula, int* p);
+exppS* expp_n(char* formula, int* p);
+exppS* expp(char* formula, int* p);
+
+void eat_char(char* formula, int* p) {
+    while(formula[*p] == ' ' || formula[*p] == '\n' || formula[*p] == '\t') (*p)++;
 }
 
-void display_error(char* s) {
-    fprintf(stderr, "ERREUR %s : cas non prévus", s);
+void conso(char* formula, int* p) {
+    eat_char(formula, p);
+    (*p)++;
+    eat_char(formula, p);
+}
+
+exppS* opp_impl(char* formula, int* p, exppS* h) {
+    if (formula[*p] == '-') {
+        conso(formula, p);
+        if (formula[*p] == '>') {
+            conso(formula, p);
+            exppS* r = expp_n(formula, p);
+            exppS* impl = create_opp_binaire(IMPLIQUE, h, r);
+            return opp_b(formula, p, impl);
+        } else {
+            printf("ERRR: attendu < \'>\' >\n");
+            exit(1);
+        }
+    }
+    return h;
+}
+
+exppS* opp_ou(char* formula, int* p, exppS* h) {
+    if (formula[*p] == '+') {
+        conso(formula, p);
+        exppS* r = expp_n(formula, p);
+        exppS* ou = create_opp_binaire(OU, h, r);
+        return opp_b(formula, p,ou);
+    }
+    return opp_impl(formula, p, h);
+}
+
+exppS* opp_et(char* formula, int* p, exppS* h) {
+    if (formula[*p] == '*') {
+        conso(formula, p);
+        exppS* r = expp_n(formula, p);
+        exppS* et = create_opp_binaire(ET, h, r);
+        return opp_b(formula, p,et);
+    }
+    return opp_ou(formula, p, h);
+}
+
+exppS* opp_b(char* formula, int *p,exppS * herite) {
+    return opp_et(formula, p, herite);
+}
+
+exppS* termeInf(char* formula, int* p) {
+    exppS* t = create_terme(formula[*p]);
+    conso(formula, p);
+    return t;
+}
+
+exppS* expp_Par(char *formula, int *p) {
+    conso(formula, p);
+    exppS *r = expp_n(formula, p);
+    if(formula[*p] == ')') {
+        conso(formula, p);
+    } else {
+        printf("ERRR: attendu ) \n");
+        exit(1);
+    }
+    return r;
+}
+
+exppS* unaire(char* formula, int* p, OPP o) {
+    exppS* t = NULL;
+    if (is_alpha(formula[*p])) {
+        t = termeInf(formula, p);
+    } else if(formula[*p] == '(') {
+        t = expp_Par(formula, p);
+    } else {
+        printf("ERRR: attendu ( ou \'VAR\' \n");
+        exit(1);
+    }
+    exppS* r = create_opp_unaire(o, t);
+    return r;
+}
+
+int isOpp_b(char* formula, int*p) {
+    return (formula[*p] == '-' || formula[*p] == '+' || formula[*p] == '*' );
+}
+
+int isOpp_u(char* formula, int *p) {
+    return (formula[*p] == '/' || formula[*p] == '[' || formula[*p] == '<' );
+}
+
+exppS* opp_Non(char *formula, int *p) {
+    conso(formula, p);
+    return unaire(formula, p, NON);
+}
+
+exppS* opp_Car(char *formula, int *p) {
+    conso(formula, p);
+    if (formula[*p] == ']') {
+        conso(formula, p);
+        return unaire(formula, p, CARRE);
+    }
+    printf("ERRR: attendu < ] >\n");
     exit(1);
 }
 
-exppS* expression(char* formula, int* p);
-
-exppS* var(char* formula, int* p) {
-    if (is_alpha(formula[*p])) {
-        exppS* result = create_terme(formula[*p]);
-        consomate(formula, p);
-        return result;
-    } else if (formula[*p] == '(') {
-        exppS* result = expression(formula, p);
-        if (formula[*p] != ')') {
-            free_exppS(result);
-            printf("ERREUR var\n");
-            exit(1);
-        }
-        consomate(formula, p);
-        return result;
+exppS* opp_los(char *formula, int* p) {
+    conso(formula, p);
+    if (formula[*p] == '>') {
+        conso(formula, p);
+        return unaire(formula, p, LOSANGE);
     }
-    display_error("VAR");
-    return NULL;
+    printf("ERRR: attendu < \'<\' >\n");
+    exit(1);
 }
 
-exppS* impl_b(char* formula, int* p, exppS* herite) {
-    if (formula[*p] == '-' && formula[(*p) + 1] == '>') {
-        consomate(formula, p);
-        consomate(formula, p);
-        exppS* _var = var(formula, p);
-        exppS* h = create_opp_binaire(IMPLIQUE, herite, _var);
-        return impl_b(formula, p, h);
-    }
-    return herite;
-}
-
-exppS* impl(char* formula, int* p) {
-    if (is_alpha(formula[*p])) {
-        exppS* _var = var(formula, p);
-        if (formula[*p] != '-' || formula[(*p) + 1] != '>') {
-            free_exppS(_var);
-            printf("ERREUR impl\n");
-            exit(1);
-        }
-        return impl_b(formula, p, _var);
-    }
-    display_error("IMPL");
-    return NULL;
-}
-
-exppS* ou_b(char* formula, int* p, exppS* herite) {
-    if (formula[*p] == '+') {
-        consomate(formula, p);
-        exppS* _impl = impl(formula, p);
-        exppS* h = create_opp_binaire(OU, herite, _impl);
-        return ou_b(formula, p, h);
-    }
-    return herite;
-}
-
-exppS* ou(char* formula, int* p) {
-    if (formula[*p] == '-' || formula[(*p) + 1] == '>') {
-        exppS* _impl = impl(formula, p);
-        if (formula[*p] != '+') {
-            free_exppS(_impl);
-            printf("ERREUR ou\n");
-            exit(1);
-        }
-        return ou_b(formula, p, _impl);
-    }
-    display_error("OU");
-    return NULL;
-}
-
-exppS* et_b(char* formula, int* p, exppS* herite) {
-    if (formula[*p] == '*') {
-        consomate(formula, p);
-        exppS* _ou = ou(formula, p);
-        exppS* h = create_opp_binaire(ET, herite, _ou);
-        return et_b(formula, p, h);
-    }
-    return herite;
-}
-
-exppS* et(char* formula, int* p) {
-    if (formula[*p] == '+') {
-        exppS* _ou = ou(formula, p);
-        if (formula[*p] != '*') {
-            free_exppS(_ou);
-            printf("ERREUR et\n");
-            exit(1);
-        }
-        return et_b(formula, p, _ou);
-    }
-    display_error("ET");
-    return NULL;
-}
-
-exppS* losange(char* formula, int* p) {
-    if (formula[*p] == '<' && formula[(*p) + 1] == '>') {
-        consomate(formula, p);
-        consomate(formula, p);
-        exppS* _et = et(formula, p);
-        return create_opp_unaire(LOSANGE, _et);
-    }
-    return et(formula, p);
-}
-
-exppS* carre(char* formula, int* p) {
-    if (formula[*p] == '[' && formula[(*p) + 1] == ']') {
-        consomate(formula, p);
-        consomate(formula, p);
-        exppS* _losange = losange(formula, p);
-        return create_opp_unaire(CARRE, _losange);
-    }
-    return losange(formula, p);
-}
-
-exppS* non(char* formula, int* p) {
+exppS* opp_u(char* formula, int* p) {
     if (formula[*p] == '/') {
-        consomate(formula, p);
-        exppS* _carre = carre(formula, p);
-        return create_opp_unaire(NON, _carre);
+        return opp_Non(formula, p);
+    } else if (formula[*p] == '[') {
+        return opp_Car(formula, p);
     }
-    return carre(formula, p);
+    return opp_los(formula, p);
 }
 
-exppS* expression(char* formula, int* p) {  // juste un wrapper
-    return non(formula, p);
+exppS* expp_n(char* formula, int* p) {
+    if (formula[*p] == '(') {
+        exppS* h = expp_Par(formula, p);
+        return opp_b(formula, p, h);
+    } else if(isOpp_u(formula, p)) {
+        exppS* h = opp_u(formula, p);
+        return opp_b(formula, p, h);
+    } else if(is_alpha(formula[*p])) {
+        exppS* h  = termeInf(formula, p);
+        return opp_b(formula, p, h);
+    }
+    printf("ERREUR attendu '(' VAR \n");;
+    exit(1);
 }
 
+exppS* expp(char* formula, int* p) {
+    if (formula[*p] == '(') {
+        exppS* h = expp_Par(formula, p);
+        return opp_b(formula, p, h);
+    }
+    else if(isOpp_u(formula, p)) {
+        exppS* h = opp_u(formula, p);
+        return opp_b(formula, p, h);
+
+    } else if(is_alpha(formula[*p])) {
+        exppS* h  = termeInf(formula, p);
+        return opp_b(formula, p, h);
+    }
+    printf("ERREUR attendu '(' VAR \n");;
+    exit(1);
+}
 
 exppS* read_formula(char* formula) {
     int p = 0;
-    return expression(formula, &p);
+    return expp(formula, &p);
 }

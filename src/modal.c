@@ -1,178 +1,10 @@
 #include "modal.h"
 #include <string.h>
 
-exppS* expp_n(char* buf, int* p);
-exppS* opp_b(char* buf,int *p,exppS * herite);
-
-void eat_char(char* buf, int* p) {
-    while(buf[*p] == ' ' || buf[*p] == '\n' || buf[*p] == '\t') (*p)++;
-}
-
-void conso(char* buf, int* p) {
-    eat_char(buf, p);
-    (*p)++;
-    eat_char(buf, p);
-}
-
-exppS* opp_impl(char* buf, int* p, exppS* h) {
-     if (buf[*p] == '-') {
-        conso(buf, p);
-        if (buf[*p] == '>') {
-            conso(buf, p);
-            exppS* r = expp_n(buf, p);
-            exppS* impl = create_opp_binaire(IMPLIQUE, h, r);
-            return opp_b(buf,p,impl);
-        } else {
-            printf("ERRR: attendu < \'>\' >\n");
-            exit(1);
-        }
-    }
-    return h;
-}
-
-exppS* opp_ou(char* buf, int* p, exppS* h) {
-    if (buf[*p] == '+') {
-        conso(buf, p);
-        exppS* r = expp_n(buf, p);
-        exppS* ou = create_opp_binaire(OU, h, r);
-        return opp_b(buf,p,ou);
-    }
-    return opp_impl(buf, p, h);
-}
-
-exppS* opp_et(char* buf, int* p, exppS* h) {
-    if (buf[*p] == '*') {
-        conso(buf, p);
-        exppS* r = expp_n(buf, p);
-        exppS* et = create_opp_binaire(ET, h, r);
-        return opp_b(buf,p,et);
-    } else  
-        return opp_ou(buf,p,h);
-}
-
-exppS* opp_b(char* buf,int *p,exppS * herite){
-    return opp_et(buf,p,herite);
-}
-
-exppS* termeInf(char* buf, int* p) {
-    exppS* t = create_terme(buf[*p]);
-    conso(buf, p);
-    return t;
-}
-
-exppS* expp_Par(char *buf,int *p){
-    conso(buf, p);
-    exppS *r = expp_n(buf, p);
-    if(buf[*p] == ')'){
-        conso(buf, p);
-    }else
-        printf("ERRR: attendu ) \n");
-    return r;
-}
-
-exppS* unaire(char* buf, int* p, OPP o) {
-    exppS* t = NULL;
-    if (is_alpha(buf[*p])) {
-        t = termeInf(buf, p);
-    } else if(buf[*p] == '('){
-        t = expp_Par(buf,p);
-    } else
-         printf("ERRR: attendu ( ou \'VAR\' \n");
-    exppS* r = create_opp_unaire(o, t);
-    return r;
-}
-
-int isOpp_b(char* buf,int*p) {
-    if(buf[*p] == '-' || buf[*p] == '+' || buf[*p] == '*' )
-        return 1;
-    return 0;
-}
-
-int isOpp_u(char* buf,int *p){
-    if(buf[*p] == '/' || buf[*p] == '[' || buf[*p] == '<' )
-        return 1;
-    return 0;
-}
-
-
-exppS* opp_Non(char *buf, int *p){
-    conso(buf, p);
-    return unaire(buf, p, NON);
-}
-
-exppS* opp_Car(char *buf,int *p){
-    conso(buf, p);
-    if (buf[*p] == ']') {
-        conso(buf, p);
-        return unaire(buf, p, CARRE);
-    } else {
-        printf("ERRR: attendu < ] >\n");
-        exit(1);
-    }
-}
-
-exppS* opp_los(char *buf, int* p){
-    conso(buf, p);
-    if (buf[*p] == '>') {
-        conso(buf, p);
-        return unaire(buf, p, LOSANGE);
-    } else {
-        printf("ERRR: attendu < \'<\' >\n");
-        exit(1);
-    }
-}
-
-exppS* opp_u(char* buf,int* p){
-    if (buf[*p] == '/') {
-        return opp_Non(buf,p);
-    } else if (buf[*p] == '[') {
-        return opp_Car(buf,p);
-    } else {
-        return opp_los(buf,p);
-    }   
-}
-
-exppS* expp_n(char* buf, int* p) {
-    if (buf[*p] == '(') {
-        exppS* h = expp_Par(buf,p);
-        return opp_b(buf,p,h);
-    }
-    else if(isOpp_u(buf,p)){
-        exppS* h = opp_u(buf,p);
-        return opp_b(buf,p,h);
-    }else if(is_alpha(buf[*p])){
-        exppS* h  = termeInf(buf, p);
-        return opp_b(buf,p,h);
-    }
-    printf("ERREUR attendu '(' VAR \n");;
-    exit(-1);
-}
-
-
-exppS* expp(char* buf, int* p) {
-    if (buf[*p] == '(') {
-        exppS* h = expp_Par(buf,p);
-        return opp_b(buf,p,h);
-    }
-    else if(isOpp_u(buf,p)){
-        exppS* h = opp_u(buf,p);
-        return opp_b(buf,p,h);
-    
-    }else if(is_alpha(buf[*p])){
-        exppS* h  = termeInf(buf, p);
-        return opp_b(buf,p,h);
-    }
-    return NULL;
-}
-
-
 exppS* negate_exppS(exppS* e) {
     exppS* n = create_opp_unaire(NON, e);
     return n;
 }
-
-// ///////////////// SUITE
-
 
 void add_in_branch(branch* b, int indi, branch* add){
     branch * elm = b;
@@ -357,8 +189,6 @@ void rule7(branch* b) {
         add_in_branch(b,1,create_branch(op2, b->monde));
     }
 }
-
-
 int nbWorld = 0;
 
 void ruleWorld(branch* b,int** worldFind) {
@@ -376,11 +206,9 @@ void ruleWorld(branch* b,int** worldFind) {
             if(worldFind[b->monde][i] == 1){
                 add_in_branch(b,0,create_branch(b->e->u.opp_u.op1,worldFind[b->monde][i]));
             }
-        }   
+        }
     }
 }
-
-
 
 int rulesCreateWorld(branch *b,int** worldFind){
     if (test_opp(b->e,NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
@@ -389,14 +217,13 @@ int rulesCreateWorld(branch *b,int** worldFind){
         exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
         add_in_branch(b,0,create_branch(non_op1,nbWorld));
     }
-    return nbWorld;   
+    return nbWorld;
 }
-
 
 // retourne 1 si tautologie
 int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int size, int** worldFind, int nbWorld) {
     for (int i = 0; i < sys_size; ++i) (*sys[i])(b); // appel de toutes les règles du système sys
-    
+
     int temp = ruleConflit(b,litterauxFind,size);
     if (temp < 0){
         return -1;
@@ -406,7 +233,7 @@ int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int
 
     ruleWorld(b,worldFind);
     nbWorld = rulesCreateWorld(b,worldFind);
-    
+
     int r = 0;
     if (b->nexts[0] != NULL) {
         r = deriv_back(b->nexts[0], sys, sys_size,litterauxFind,size,worldFind,nbWorld);
@@ -433,14 +260,14 @@ void free_branch(branch* b) {
 // retourne 1 si tautologie
 int deriv(exppS* e) {
     branch* head = create_branch(e, 0);
-    litteraux* litterauxFind = (litteraux *)malloc(sizeof(litteraux) * 100);
+    litteraux* litterauxFind = (litteraux*) malloc(sizeof(litteraux) * 100);
     int system_K_size = 7;
     rule system_K[7] = {rule1, rule2, rule3, rule4, rule5, rule6, rule7}; // voila c'est mieux
-    int** worldFind = (int**)malloc(sizeof(int*) * 100);
+    int** worldFind = (int**) malloc(sizeof(int*) * 100);
     for (int i = 0; i < 100; ++i)
     {
-        worldFind[i] = (int*)malloc(sizeof(int)*100);
-    } 
+        worldFind[i] = (int*) malloc(sizeof(int)*100);
+    }
     int r = deriv_back(head, system_K, system_K_size,litterauxFind, 0,worldFind,0);
     display_branch(head, 0);
     free_branch(head);

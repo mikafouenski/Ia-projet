@@ -1,6 +1,6 @@
 #include "modal.h"
 #include "util.h"
-// #include "read_formula.h"
+#include "read_formula.h"
 
 void read_file(const char* name, char* buf) {
     FILE *f = fopen(name, "r");
@@ -24,39 +24,36 @@ int main(int argc, char const *argv[]) {
     char *buf = (char*) malloc (BUFFSIZE * sizeof(char));
 
     read_file(argv[1], buf);
-
-    int p = 0;
-    // exppS* r = expp(buf, &p, NULL);
     printf("%s\n",buf);
-    exppS* r = expp(buf,&p);
+
+    exppS* r = read_formula(buf);
 
     printf("Formule :  ");
     display_exppS(r);
     printf("\n");
 
-    // exppS* n = negate_exppS(r);
+    exppS* n = negate_exppS(r);
 
-    // printf("Négation :  ");
-    // display_exppS(n);
-    // printf("\n");
+    printf("Négation :  ");
+    display_exppS(n);
+    printf("\n");
 
-    // // litteraux *litterauxFind = malloc(sizeof(litteraux)* 100);
+    // litteraux *litterauxFind = malloc(sizeof(litteraux)* 100);
 
-    // // int result = test(n,litterauxFind,0,100,1);
-    // // if(result > 0){
-    // //     printf("Pas une totologie\n");
-    // // }
-    // // else
-    // //     printf("Totologie\n");
+    // int result = test(n,litterauxFind,0,100,1);
+    // if(result > 0){
+    //     printf("Pas une totologie\n");
+    // }
+    // else
+    //     printf("Totologie\n");
 
-    // // free(litterauxFind);
+    // free(litterauxFind);
 
-    // int tautologie = deriv(n);
-    // if (tautologie < 0) printf("TAUTOLOGIE ! ! !\n");
-    // else printf("PAS TAUTOLOGIE ! ! !\n");
+    int tautologie = deriv(n);
+    if (tautologie < 0) printf("TAUTOLOGIE ! ! !\n");
+    else printf("PAS TAUTOLOGIE ! ! !\n");
 
     free(buf);
-    // free_exppS(n);
-    free_exppS(r);
+    free_exppS(n);
     return 0;
 }
