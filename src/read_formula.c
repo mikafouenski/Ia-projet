@@ -17,11 +17,10 @@ exppS* expp_n(char* formula, int* p);
 exppS* expp(char* formula, int* p);
 
 void eat_char(char* formula, int* p) {
-    while(formula[*p] == ' ' || formula[*p] == '\n' || formula[*p] == '\t') (*p)++;
+    while(formula[*p] == ' ' || formula[*p] == '\n' || formula[*p] == '\r' || formula[*p] == '\t') (*p)++;
 }
 
 void conso(char* formula, int* p) {
-    eat_char(formula, p);
     (*p)++;
     eat_char(formula, p);
 }
@@ -92,8 +91,7 @@ exppS* unaire(char* formula, int* p, OPP o) {
         t = expp_Par(formula, p);
     } else if(isOpp_u(formula, p)){
         t = opp_u(formula,p);
-    } 
-    else {
+    } else {
         printf("ERRR: attendu ( ou \'VAR\' \n");
         exit(1);
     }

@@ -8,8 +8,8 @@ void read_file(const char* name, char* buf) {
         perror("fopen");
         exit(1);
     }
-    if (! fscanf(f, "%s", buf)) {
-        perror("fscanf");
+    if (fgets(buf, BUFFSIZE, f) == NULL) {
+        perror("fgets");
         exit(1);
     }
     fclose(f);
@@ -24,7 +24,7 @@ int main(int argc, char const *argv[]) {
     char *buf = (char*) malloc (BUFFSIZE * sizeof(char));
 
     read_file(argv[1], buf);
-    printf("%s\n",buf);
+    printf("F :%s\n",buf);
 
     exppS* r = read_formula(buf);
 
