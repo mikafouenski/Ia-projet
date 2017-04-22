@@ -217,7 +217,14 @@ void add_in_all_branch(branch* b, branch* new_branch) {
 
 void system_k_1(branch* b, int** worldFind, int* nbWorld) {
     if(test_opp(b->e, CARRE)) {
-        add_in_all_branch(b, create_branch(b->e, b->world));
+        branch *c = b;
+        while(c) {
+            if(!test_opp(c->e, CARRE)) {
+                add_in_all_branch(b, create_branch(b->e, b->world));
+                break;
+            }
+            c = c->nexts[0];
+        }
         for (int i = 0; i < *nbWorld + 1; ++i)
             if(worldFind[b->world][i] == 1)
                 add_in_branch(b, 0, create_branch(b->e->u.opp_u.op1, worldFind[b->world][i]));
