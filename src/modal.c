@@ -225,14 +225,11 @@ void system_k_1(branch* b, int** worldFind, int* nbWorld) {
     }
 }
 
-
-
 void replicWorld(int ** worldFind,int* nbWorld,int monde){
-    int j;
-    for (int i = 0; i < b->monde; ++i)
+    for (int i = 0; i < monde; ++i)
     {
         if(worldFind[i][monde] == 1){
-            worldFind[i][nbWorld] = 1;
+            worldFind[i][*nbWorld] = 1;
         }
     }
 }
@@ -240,7 +237,7 @@ void replicWorld(int ** worldFind,int* nbWorld,int monde){
 void system_k_2(branch *b, int** worldFind, int* nbWorld) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
         (*nbWorld)++;
-        replicWorld(worldFind,nbWorld,monde);
+        replicWorld(worldFind,nbWorld,b->monde);
         worldFind[b->monde][*nbWorld] = 1;
         
         exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
