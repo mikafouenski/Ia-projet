@@ -236,7 +236,7 @@ int isBranch(branch* b) {
 int allBranch(branch* b) {
     branch *tmp = b;
     while(tmp) {
-        if(!isBranch(b)) {
+        if(!isBranch(b) && !test_opp(b->e, CARRE)) {
             return 0;
         }
         tmp = tmp->nexts[0];

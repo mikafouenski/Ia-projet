@@ -91,7 +91,6 @@ exppS* unaire(char* formula, int* p, OPP o) {
     } else if(formula[*p] == '(') {
         t = expp_Par(formula, p);
     } else if(isOpp_u(formula, p)){
-        if(formula)
         t = opp_u(formula,p);
     } 
     else {
