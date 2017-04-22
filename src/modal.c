@@ -202,11 +202,18 @@ void rule_base_8(branch* b) {
     }
 }
 
+// [][]A = []A
+void rule_4_1(branch *b){
+    if(test_opp(b->e,CARRE) && test_opp(b->e->u.opp_u.op1, CARRE)){
+        add_in_branch(b, 0, create_branch(b->e->u.opp_u.op1, b->monde));
+    }
+}
+
 void system_k_1(branch* b, int** worldFind, int* nbWorld) {
     if(test_opp(b->e, CARRE)) {
         branch *c = b;
         while(c) {
-            if(! test_opp(c->e, CARRE)) {
+            if(!test_opp(c->e, CARRE)) {
                 add_in_branch(b, 0, create_branch(b->e, b->monde));
                 return;
             }
@@ -218,14 +225,42 @@ void system_k_1(branch* b, int** worldFind, int* nbWorld) {
     }
 }
 
+
+
+void replicWorld(int ** worldFind,int* nbWorld,int monde){
+    int j;
+    for (int i = 0; i < b->monde; ++i)
+    {
+        if(worldFind[i][monde] == 1){
+            worldFind[i][nbWorld] = 1;
+        }
+    }
+}
+
 void system_k_2(branch *b, int** worldFind, int* nbWorld) {
     if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
         (*nbWorld)++;
+        replicWorld(worldFind,nbWorld,monde);
         worldFind[b->monde][*nbWorld] = 1;
+        
         exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
         add_in_branch(b, 0, create_branch(non_op1, *nbWorld));
     }
 }
+
+
+void system_4_2(branch *b, int** worldFind, int* nbWorld) {
+    if (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, CARRE)) {
+        (*nbWorld)++;
+        
+        worldFind[b->monde][*nbWorld] = 1;
+        
+        exppS* non_op1 = negate_exppS((b->e->u.opp_u.op1->u.opp_u.op1));
+        add_in_branch(b, 0, create_branch(non_op1, *nbWorld));
+    }
+}
+
+
 
 int isBranch(branch* b) {
     return (test_opp(b->e, NON) && test_opp(b->e->u.opp_u.op1, ET)) ||
