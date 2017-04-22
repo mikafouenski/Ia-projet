@@ -208,6 +208,21 @@ void rule7(branch* b) {
         add_in_branch(b,1,create_branch(op2, b->monde));
     }
 }
+
+// <>A = /[]/a
+void rule8(branch* b) {
+    if (test_opp(b->e,LOSANGE)) { // j'ai trouver A->B
+        exppS* op1 = (exppS*) malloc(sizeof(exppS));
+        memcpy(op1, b->e->u.opp_b.op1, sizeof(exppS));
+        exppS* non_op1 = negate_exppS(op1);
+        exppS* carre = create_opp_unaire(CARRE, non_op1);
+        exppS* non_carre = negate_exppS(carre);
+        add_in_branch(b,0,create_branch(non_carre, b->monde));
+    }
+}
+
+
+
 int nbWorld = 0;
 
 void ruleWorld(branch* b,int** worldFind) {
@@ -274,9 +289,7 @@ int deriv_back(branch* b, rule* sys, int sys_size, litteraux* litterauxFind, int
     }
 
     for (int i = 0; i < sys_size; ++i) (*sys[i])(b); // appel de toutes les règles du système sys
-    // printf("\n");
-    // display_branch(b,0);
-    // printf("\n");
+    
     int temp = ruleConflit(b,litterauxFind,size);
     if (temp < 0){
         return -1;
@@ -314,8 +327,8 @@ void free_branch(branch* b) {
 int deriv(exppS* e) {
     branch* head = create_branch(e, 0);
     litteraux* litterauxFind = (litteraux*) malloc(sizeof(litteraux) * 100);
-    int system_K_size = 7;
-    rule system_K[7] = {rule1, rule2, rule3, rule4, rule5, rule6, rule7}; // voila c'est mieux
+    int system_K_size = 8;
+    rule system_K[8] = {rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8}; // voila c'est mieux
     int** worldFind = (int**) malloc(sizeof(int*) * 100);
     for (int i = 0; i < 100; ++i)
     {
