@@ -61,6 +61,6 @@ typedef struct branch { // arbre à 2 fils
 
 typedef void (*rule_base) (branch*);
 
-typedef void (*syst) (branch*, int**, int*);
+typedef void (*syst)(int**, int*, int);
 
 #endif
