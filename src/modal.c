@@ -335,7 +335,7 @@ int deriv(exppS* e) {
         worldFind[i] = (int*) malloc(sizeof(int) * 100);
 
     int nbWorld = 0;
-    int r = deriv_back(head, system_base, system_base_size, system_k, system_k_size, litterauxFind, 0, worldFind, &nbWorld);
+    int r = deriv_back(head, system_base, system_base_size, system_kt45, system_kt45_size, litterauxFind, 0, worldFind, &nbWorld);
 
     display_branch(head, 0);
     free_branch(head);
