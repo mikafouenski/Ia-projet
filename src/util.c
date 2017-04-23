@@ -81,7 +81,7 @@ void display_exppS(exppS* e) {
             printf(")");
             break;
         case terme:
-            printf("%s", e->u.t.c);
+            printf("%c", (*e->u.t.c));
             break;
     }
 }

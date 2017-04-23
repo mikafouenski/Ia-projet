@@ -333,7 +333,7 @@ int deriv(exppS* e, int choise) {
 
     int** worldFind = (int**) malloc(sizeof(int*) * 100);
     for (int i = 0; i < 100; ++i)
-        worldFind[i] = (int*) malloc(sizeof(int) * 100);
+        worldFind[i] = (int*) calloc(sizeof(int), 100);
 
     int nbWorld = 0;
     int r;
