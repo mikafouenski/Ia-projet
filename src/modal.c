@@ -309,7 +309,8 @@ void free_branch(branch* b) {
 }
 
 // retourne 1 si tautologie
-int deriv(exppS* e) {
+// choix : 1=k, 1=t, 3=kt4, 4=kt45, autre=erreur
+int deriv(exppS* e, int choise) {
     branch* head = create_branch(e, 0);
 
     litteraux* litterauxFind = (litteraux*) malloc(sizeof(litteraux) * 100);
@@ -335,8 +336,22 @@ int deriv(exppS* e) {
         worldFind[i] = (int*) malloc(sizeof(int) * 100);
 
     int nbWorld = 0;
-    int r = deriv_back(head, system_base, system_base_size, system_kt45, system_kt45_size, litterauxFind, 0, worldFind, &nbWorld);
+    int r;
 
+    if (choise == 1) // k
+        r = deriv_back(head, system_base, system_base_size, system_k, system_k_size, litterauxFind, 0, worldFind, &nbWorld);
+    else if (choise == 2) // t
+        r = deriv_back(head, system_base, system_base_size, system_kt, system_kt_size, litterauxFind, 0, worldFind, &nbWorld);
+    else if (choise == 3) // kt4
+        r = deriv_back(head, system_base, system_base_size, system_kt4, system_kt4_size, litterauxFind, 0, worldFind, &nbWorld);
+    else if (choise == 4) // kt4
+        r = deriv_back(head, system_base, system_base_size, system_kt45, system_kt45_size, litterauxFind, 0, worldFind, &nbWorld);
+    else {
+        printf("Erreur option non reconnue !\n");
+        exit(1);
+    }
+
+    printf("\n");
     display_branch(head, 0);
     free_branch(head);
     free(litterauxFind);

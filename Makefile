@@ -6,7 +6,7 @@ LDFLAGS=
 SRC=$(wildcard src/*.c)
 OBJ=$(SRC:.c=.o)
 
-EXEC=logmod
+EXEC=analytics_array
 
 all: $(EXEC)
 
