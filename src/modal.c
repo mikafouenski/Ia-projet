@@ -26,8 +26,9 @@ branch* create_branch(exppS* e, int world) {
 void display_branch(branch* b, int indent) {
     for (int i = 0; i < indent; ++i) printf("  ");
     if (b->e != NULL) {
+        printf("%d:", b->world);
         display_exppS(b->e);
-        printf("  M:%d\n", b->world);
+        printf("\n");
     }
     if (b->nexts[0])
         display_branch(b->nexts[0], indent + 1);
